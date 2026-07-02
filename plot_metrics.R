@@ -14,9 +14,9 @@ dir.create(plot_dir, showWarnings = FALSE)
 # Metrics to plot
 metric_cols <- c("sensitivity", "specificity", "precision", "f1")
 metric_labels <- c(
-  sensitivity = "Sensitivity (Recall)",
+  sensitivity = "Sensitivity",
   specificity = "Specificity",
-  precision   = "Precision (PPV)",
+  precision   = "Precision",
   f1          = "F1 Score"
 )
 
@@ -74,7 +74,6 @@ for (i in seq_len(nrow(combos))) {
       clrs
     }) +
     labs(
-      title = paste0(bm, " — ", ana),
       x     = NULL,
       y     = "Score",
       fill  = "Tool"
@@ -94,3 +93,51 @@ for (i in seq_len(nrow(combos))) {
 }
 
 message("\nDone.")
+
+# ── ALLCAPS accuracy vs training set size ──────────────────────────────────────
+training_counts <- read_csv(
+  file.path(data_root, "GPS_training_allcaps_counts.csv"),
+  show_col_types = FALSE
+)
+
+allcaps_metrics <- metrics %>%
+  filter(tool == "ALLCAPS") %>%
+  inner_join(training_counts, by = c("class" = "Serotype")) %>%
+  select(benchmark, analysis, class, n_genomes_without_allcaps,
+         all_of(metric_cols)) %>%
+  pivot_longer(all_of(metric_cols), names_to = "metric", values_to = "value") %>%
+  mutate(metric = factor(metric, levels = metric_cols))
+
+for (bm in unique(allcaps_metrics$benchmark)) {
+  for (ana in unique(allcaps_metrics$analysis)) {
+    df_plot <- allcaps_metrics %>%
+      filter(benchmark == bm, analysis == ana, !is.na(value))
+
+    if (nrow(df_plot) == 0) next
+
+    p <- ggplot(df_plot,
+                aes(x = n_genomes_without_allcaps, y = value, label = class)) +
+      geom_point(colour = "#CC0000", size = 1.8, alpha = 0.7) +
+      geom_smooth(method = "loess", se = TRUE, colour = "grey30",
+                  linewidth = 0.7, fill = "grey80") +
+      geom_text(size = 2, vjust = -0.6, colour = "grey20") +
+      facet_wrap(~metric, ncol = 2, labeller = labeller(metric = metric_labels)) +
+      scale_x_log10(labels = scales::comma) +
+      scale_y_continuous(limits = c(0, 1.05), breaks = seq(0, 1, 0.2)) +
+      labs(
+        x        = "Training genomes per serotype",
+        y        = "Score"
+      ) +
+      theme_bw(base_size = 11) +
+      theme(strip.text = element_text(face = "bold"))
+
+    bm_lbl  <- gsub("[^A-Za-z0-9]", "_", bm)
+    ana_lbl <- gsub("[^A-Za-z0-9]", "_", ana)
+    out_file <- file.path(plot_dir,
+                          paste0("allcaps_vs_training_", bm_lbl, "_", ana_lbl, ".pdf"))
+    ggsave(out_file, p, width = 12, height = 9)
+    message("Saved: ", out_file)
+  }
+}
+
+message("\nTraining-size plots done.")

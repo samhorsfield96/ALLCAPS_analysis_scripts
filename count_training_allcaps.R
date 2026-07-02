@@ -18,6 +18,8 @@ gt <- read_csv(file.path(data_root, "GPS_benchmark", "ground_truth.csv"),
 allcaps <- read_csv(file.path(data_root, "GPS_benchmark", "allcaps_predictions.csv"),
                     show_col_types = FALSE) %>%
   filter(!grepl("NONCBL#", sample_id, fixed = TRUE)) %>%
+  filter(!grepl("/", sample_id, fixed = TRUE)) %>%
+  filter(!grepl("serotype", sample_id, ignore.case = TRUE)) %>%
   mutate(sample_id = sub("#.*$", "", sample_id)) %>%
   group_by(sample_id) %>%
   slice_max(order_by = serotype_confidence, n = 1, with_ties = FALSE) %>%
