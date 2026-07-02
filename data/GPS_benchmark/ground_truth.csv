@@ -1,4 +1,4 @@
-Public_ID,Contig_ID,Serotype,Is_capsule
+sample_id,Contig_ID,Serotype,Is_capsule
 ERR9796441,17,33G,1
 ERR9796441,33,33G,1
 ERR1066261,1,33A,1
