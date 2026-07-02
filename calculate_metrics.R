@@ -7,7 +7,9 @@ library(purrr)
 data_root <- file.path(dirname(rstudioapi::getSourceEditorContext()$path), "data")
 wide <- read_csv(file.path(data_root, "merged_benchmark_results_wide.csv"),
                  show_col_types = FALSE) %>%
-  mutate(true_serogroup = as.character(true_serogroup))
+  mutate(true_serogroup = as.character(true_serogroup)) %>%
+  # remove ambiguous true serotype calls
+  filter(!is.na(true_serogroup))
 
 tools <- setdiff(names(wide), c("sample_id", "benchmark", "true_serotype", "true_serogroup"))
 
