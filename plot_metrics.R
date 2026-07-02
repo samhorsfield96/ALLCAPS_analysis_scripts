@@ -3,6 +3,7 @@ library(readr)
 library(tidyr)
 library(ggplot2)
 library(ggtext)
+library(patchwork)
 
 # ── Load data ──────────────────────────────────────────────────────────────────
 data_root <- file.path(dirname(rstudioapi::getSourceEditorContext()$path), "data")
@@ -20,83 +21,72 @@ metric_labels <- c(
   f1          = "F1 Score"
 )
 
-# ── Loop over each benchmark × analysis combination ───────────────────────────
-combos <- metrics %>%
-  distinct(benchmark, analysis)
-
-for (i in seq_len(nrow(combos))) {
-  bm  <- combos$benchmark[i]
-  ana <- combos$analysis[i]
-
-  df <- metrics %>%
-    filter(benchmark == bm, analysis == ana)
-
-  # Long format for faceting over metric
+# ── Helper: build one boxplot for a single benchmark ─────────────────────────
+make_boxplot <- function(df, bm_label) {
   df_long <- df %>%
     select(tool, class, all_of(metric_cols)) %>%
     pivot_longer(all_of(metric_cols), names_to = "metric", values_to = "value") %>%
     mutate(metric = factor(metric, levels = metric_cols))
 
-  # Balanced (macro-average) per tool × metric, ignoring NA
   balanced <- df_long %>%
     group_by(tool, metric) %>%
     summarise(balanced = mean(value, na.rm = TRUE), .groups = "drop")
 
-  # Merge for annotation positioning: place label just above upper whisker
   ymax_per <- df_long %>%
     group_by(tool, metric) %>%
     summarise(y_pos = max(value, na.rm = TRUE), .groups = "drop")
 
   annot <- balanced %>%
     left_join(ymax_per, by = c("tool", "metric")) %>%
-    mutate(
-      label    = sprintf("%.3f", balanced),
-      y_annot  = pmin(y_pos + 0.04, 1.05)
-    )
+    mutate(label = sprintf("%.3f", balanced), y_annot = pmin(y_pos + 0.04, 1.05))
 
-  p <- ggplot(df_long, aes(x = tool, y = value, fill = tool)) +
+  tool_levels <- sort(unique(df_long$tool))
+  greys <- grDevices::gray.colors(sum(tool_levels != "ALLCAPS"), start = 0.4, end = 0.85)
+  clrs  <- setNames(character(length(tool_levels)), tool_levels)
+  clrs[tool_levels != "ALLCAPS"] <- greys
+  clrs["ALLCAPS"] <- "#CC0000"
+
+  ggplot(df_long, aes(x = tool, y = value, fill = tool)) +
     geom_boxplot(outlier.size = 0.8, na.rm = TRUE) +
-    geom_point(
-      data    = annot,
-      aes(x = tool, y = balanced),
-      shape   = 23, size = 3, fill = "white", colour = "black",
-      inherit.aes = FALSE
-    ) +
-    geom_text(
-      data    = annot,
-      aes(x = tool, y = y_annot, label = label),
-      size    = 4,
-      vjust   = 0,
-      inherit.aes = FALSE
-    ) +
+    geom_point(data = annot, aes(x = tool, y = balanced),
+               shape = 23, size = 3, fill = "white", colour = "black",
+               inherit.aes = FALSE) +
+    geom_text(data = annot, aes(x = tool, y = y_annot, label = label),
+              size = 4, vjust = 0, inherit.aes = FALSE) +
     facet_wrap(~metric, ncol = 2, labeller = labeller(metric = metric_labels)) +
     scale_y_continuous(limits = c(0, 1.12), breaks = seq(0, 1, 0.2)) +
-    scale_fill_manual(values = {
-      tool_levels <- sort(unique(df_long$tool))
-      greys <- grDevices::gray.colors(sum(tool_levels != "ALLCAPS"), start = 0.4, end = 0.85)
-      clrs  <- setNames(character(length(tool_levels)), tool_levels)
-      clrs[tool_levels != "ALLCAPS"] <- greys
-      clrs["ALLCAPS"] <- "#CC0000"
-      clrs
-    }) +
-    labs(
-      x     = NULL,
-      y     = "Score",
-      fill  = "Tool"
-    ) +
+    scale_fill_manual(values = clrs) +
+    labs(x = NULL, y = "Score") +
     theme_bw(base_size = 11) +
     theme(
       axis.text.x  = element_text(angle = 40, hjust = 1, size = 12),
       axis.text.y  = element_text(size = 12),
       strip.text   = element_text(face = "bold", size = 14),
-      axis.title.y  = element_text(size = 16),
+      axis.title.y = element_text(size = 16),
+      plot.title   = element_text(face = "bold", size = 14),
       legend.position = "none"
     )
+}
 
-  bm_lbl  <- gsub("[^A-Za-z0-9]", "_", bm)
-  ana_lbl <- gsub("[^A-Za-z0-9]", "_", ana)
-  out_file <- file.path(plot_dir, paste0("boxplot_", bm_lbl, "_", ana_lbl, ".pdf"))
-  ggsave(out_file, p, width = 12, height = 9)
+# ── Loop over each analysis, combining all benchmarks into one PDF ────────────
+combos <- metrics %>%
+  distinct(benchmark, analysis)
+
+for (ana in unique(combos$analysis)) {
+  plots <- lapply(unique(combos$benchmark), function(bm) {
+    df <- metrics %>% filter(benchmark == bm, analysis == ana)
+    if (nrow(df) == 0) return(NULL)
+    make_boxplot(df, bm)
+  })
+  plots <- Filter(Negate(is.null), plots)
+  if (length(plots) == 0) next
+
+  combined_plot <- wrap_plots(plots, ncol = 1) +
+    plot_annotation(tag_levels = "A") & 
+    theme(plot.tag = element_text(size = 24, face = 'bold'))
+  ana_lbl  <- gsub("[^A-Za-z0-9]", "_", ana)
+  out_file <- file.path(plot_dir, paste0("boxplot_", ana_lbl, ".pdf"))
+  ggsave(out_file, combined_plot, width = 14, height = 10 * length(plots))
   message("Saved: ", out_file)
 }
 
