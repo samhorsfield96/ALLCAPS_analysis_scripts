@@ -1,4 +1,4 @@
-,is_cbl,is_novel_serogroup,is_novel_energy,is_novel_openmax,serotype_confidence,novelty_confidence,openmax_pred,openmax_prob_unknown,pred_genogroup,pred_argmax
+sample_id,is_cbl,is_novel_serogroup,is_novel_energy,is_novel_openmax,serotype_confidence,novelty_confidence,openmax_pred,openmax_prob_unknown,pred_genogroup,pred_argmax
 SAMEA115377450#2,True,False,False,False,1.0,-13.846,3,0.0052,36,3
 SAMEA3175979#2,True,False,False,False,1.0,-13.846,3,0.0052,36,3
 SAMEA6097800#1,True,False,False,False,1.0,-13.846,3,0.0052,36,3
