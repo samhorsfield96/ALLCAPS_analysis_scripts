@@ -50,16 +50,22 @@ for (i in seq_len(nrow(combos))) {
   annot <- balanced %>%
     left_join(ymax_per, by = c("tool", "metric")) %>%
     mutate(
-      label    = sprintf("Bal=%.3f", balanced),
+      label    = sprintf("%.3f", balanced),
       y_annot  = pmin(y_pos + 0.04, 1.05)
     )
 
   p <- ggplot(df_long, aes(x = tool, y = value, fill = tool)) +
     geom_boxplot(outlier.size = 0.8, na.rm = TRUE) +
+    geom_point(
+      data    = annot,
+      aes(x = tool, y = balanced),
+      shape   = 23, size = 3, fill = "white", colour = "black",
+      inherit.aes = FALSE
+    ) +
     geom_text(
       data    = annot,
       aes(x = tool, y = y_annot, label = label),
-      size    = 2.5,
+      size    = 4,
       vjust   = 0,
       inherit.aes = FALSE
     ) +
@@ -80,8 +86,10 @@ for (i in seq_len(nrow(combos))) {
     ) +
     theme_bw(base_size = 11) +
     theme(
-      axis.text.x  = element_text(angle = 40, hjust = 1, size = 8),
-      strip.text   = element_text(face = "bold"),
+      axis.text.x  = element_text(angle = 40, hjust = 1, size = 12),
+      axis.text.y  = element_text(size = 12),
+      strip.text   = element_text(face = "bold", size = 14),
+      axis.title.y  = element_text(size = 16),
       legend.position = "none"
     )
 
@@ -129,7 +137,11 @@ for (bm in unique(allcaps_metrics$benchmark)) {
         y        = "Score"
       ) +
       theme_bw(base_size = 11) +
-      theme(strip.text = element_text(face = "bold"))
+      theme(
+        axis.text.y  = element_text(size = 12),
+        strip.text   = element_text(face = "bold", size = 14),
+        axis.title.y  = element_text(size = 16),
+        axis.title.x  = element_text(size = 16))
 
     bm_lbl  <- gsub("[^A-Za-z0-9]", "_", bm)
     ana_lbl <- gsub("[^A-Za-z0-9]", "_", ana)
