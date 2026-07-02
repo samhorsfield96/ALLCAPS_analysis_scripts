@@ -19,7 +19,9 @@ process_benchmark_dir <- function(dir_path) {
       true_serotype = trimws(sub("(?i)serogroup\\s*", "", true_serotype, perl = TRUE)),
       true_serotype = sub("^0+([0-9])", "\\1", true_serotype),
       true_serogroup = sub("^([0-9]+).*", "\\1", true_serotype)
-    )
+    ) %>%
+    filter(!grepl("/", true_serotype, fixed = TRUE)) %>%
+    filter(!grepl("NON-CBL", true_serotype, ignore.case = TRUE))
 
   # --- Prediction files ---
   pred_files <- setdiff(
