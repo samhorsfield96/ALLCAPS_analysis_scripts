@@ -2,6 +2,13 @@ library(dplyr)
 library(readr)
 library(tidyr)
 
+# ── ALLCAPS-typeable serotypes ────────────────────────────────────────────────
+allcaps_serotypes <- read_csv(
+  file.path(dirname(rstudioapi::getSourceEditorContext()$path),
+            "data", "ALLCAPS_possible_serotypes.csv"),
+  show_col_types = FALSE
+)$Serotypes
+
 # Process a single benchmark directory and return a merged data frame
 process_benchmark_dir <- function(dir_path) {
   message("Processing: ", dir_path)
@@ -16,13 +23,10 @@ process_benchmark_dir <- function(dir_path) {
     select(sample_id, true_serotype = Serotype) %>%
     distinct(sample_id, .keep_all = TRUE) %>%
     mutate(
-      true_serotype = trimws(sub("(?i)serogroup\\s*", "", true_serotype, perl = TRUE)),
       true_serotype = sub("^0+([0-9])", "\\1", true_serotype),
       true_serogroup = sub("^([0-9]+).*", "\\1", true_serotype)
     ) %>%
-    filter(!grepl("/", true_serotype, fixed = TRUE)) %>%
-    filter(!grepl("NON-CBL", true_serotype, ignore.case = TRUE)) %>%
-    filter(!grepl("serotype", true_serotype, ignore.case = TRUE))
+    filter(true_serotype %in% allcaps_serotypes)
 
   # --- Prediction files ---
   pred_files <- setdiff(
