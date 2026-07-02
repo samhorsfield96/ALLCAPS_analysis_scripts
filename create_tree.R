@@ -44,7 +44,7 @@ sample.df <- read_csv(sample.file, show_col_types = FALSE) %>%
   ungroup() %>%
   select(sample_id, predicted_serotype = pred_argmax, is_cbl = is_cbl, is_novel_energy = is_novel_energy) %>%
   mutate(tool = "ALLCAPS")
-colnames(sample.df) <- c("tip", "predicted_serotype", "is_cbl", "is_novel_energy","tool")
+colnames(sample.df) <- c("tip", "predicted_serotype", "is_cbl", "is_novel_energy", "tool")
 
 write.csv(sample.df, file.path(data_root, "parsed_ATB_query_results.csv"), row.names = FALSE, quote = FALSE)
 
