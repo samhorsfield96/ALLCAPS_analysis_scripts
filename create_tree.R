@@ -19,14 +19,14 @@ generate_tree <- function(tree, dataframe){
   # -------------------------------
   # Reorder taxonomy to tree tips
   # -------------------------------
-  new.dataframe <- dataframe[new.tree$tip.label, , drop = FALSE]
+  new.dataframe <- dataframe[dataframe$sample_id %in% new.tree$tip.label,]
   
   # -------------------------------
   # HARD SAFETY CHECKS
   # -------------------------------
   stopifnot(
     nrow(new.dataframe) == length(new.tree$tip.label),
-    all(rownames(new.dataframe) == new.tree$tip.label)
+    all(rownames(new.dataframe$sample_id) == new.tree$tip.label)
   )
   
   list(new.tree, new.dataframe)
@@ -46,9 +46,8 @@ sample.df <- read_csv(sample.file, show_col_types = FALSE) %>%
   mutate(tool = "ALLCAPS")
 sample.df$tip <- sample.df$sample_id
 
-tree_list <- generate_tree(tree, sample.df)
-sub_tree  <- tree_list[[1]]
-sub_df    <- tree_list[[2]]
-
-#output new subtree
-write.tree(tree, file = "my_tree.nwk")
+#only run if downsampling tree
+#tree_list <- generate_tree(tree, sample.df)
+#tree  <- tree_list[[1]]
+#sample.df    <- tree_list[[2]]
+#write.tree(tree, file = "pneumo_ATB_tree.nwk")
