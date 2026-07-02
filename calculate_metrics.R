@@ -1,0 +1,134 @@
+library(dplyr)
+library(readr)
+library(tidyr)
+library(purrr)
+
+# ── Load data ──────────────────────────────────────────────────────────────────
+data_root <- file.path(dirname(rstudioapi::getSourceEditorContext()$path), "data")
+wide <- read_csv(file.path(data_root, "merged_benchmark_results_wide.csv"),
+                 show_col_types = FALSE)
+
+tools <- setdiff(names(wide), c("sample_id", "benchmark", "true_serotype", "true_serogroup"))
+
+# ── Match functions ────────────────────────────────────────────────────────────
+exact_match  <- function(vec, cls) !is.na(vec) & vec == cls
+within_match <- function(vec, cls) !is.na(vec) & grepl(cls, vec, fixed = TRUE)
+
+# ── Helper: compute per-class TP/FP/FN, sensitivity, specificity, F1 ──────────
+# checked, all good
+compute_metrics <- function(true_vec, pred_vec, match_fn) {
+  classes <- sort(unique(true_vec[!is.na(true_vec)]))
+
+  map_dfr(classes, function(cls) {
+    actual_pos    <- match_fn(true_vec, cls)
+    predicted_pos <- match_fn(pred_vec, cls)
+
+    TP <- sum( actual_pos &  predicted_pos, na.rm = TRUE)
+    FP <- sum(!actual_pos &  predicted_pos, na.rm = TRUE)
+    FN <- sum( actual_pos & !predicted_pos, na.rm = TRUE)
+    TN <- sum(!actual_pos & !predicted_pos, na.rm = TRUE)
+
+    sensitivity <- if ((TP + FN) > 0) TP / (TP + FN) else NA_real_
+    specificity <- if ((TN + FP) > 0) TN / (TN + FP) else NA_real_
+    precision   <- if ((TP + FP) > 0) TP / (TP + FP) else NA_real_
+    f1          <- if (!is.na(precision) && !is.na(sensitivity) &&
+                       (precision + sensitivity) > 0)
+                     2 * precision * sensitivity / (precision + sensitivity)
+                   else NA_real_
+
+    tibble(class = cls, TP, FP, FN, TN, sensitivity, specificity, precision, f1)
+  })
+}
+
+# ── Helper: build confusion matrix (true rows × predicted cols) ───────────────
+# For "within" match the predicted label is mapped to whichever true class it
+# contains, so the confusion matrix stays in the space of true classes only.
+build_confusion <- function(true_vec, pred_vec, match_fn, classes) {
+  # For each prediction, find which true-class(es) it matches
+  map_pred_to_classes <- function(p) {
+    if (is.na(p)) return(NA_character_)
+    hits <- classes[vapply(classes, function(cls) match_fn(p, cls), logical(1))]
+    if (length(hits) == 0) NA_character_ else hits
+  }
+
+  mat <- matrix(0L, nrow = length(classes), ncol = length(classes),
+                dimnames = list(true = classes, predicted = classes))
+
+  for (i in seq_along(true_vec)) {
+    tc <- true_vec[i]
+    if (is.na(tc) || !(tc %in% classes)) next
+    p_classes <- map_pred_to_classes(pred_vec[i])
+    for (pc in p_classes) {
+      if (!is.na(pc)) mat[tc, pc] <- mat[tc, pc] + 1L
+    }
+  }
+  as.data.frame(mat)
+}
+
+# ── Run analysis for one benchmark × level × match-type ───────────────────────
+run_analysis <- function(data, true_col, match_type) {
+  match_fn <- if (match_type == "exact") exact_match else within_match
+  classes  <- sort(unique(data[[true_col]][!is.na(data[[true_col]])]))
+
+  metrics_list   <- list()
+  confusion_list <- list()
+
+  for (tool in tools) {
+    true_vec <- data[[true_col]]
+    pred_vec <- data[[tool]]
+
+    metrics_list[[tool]] <- compute_metrics(true_vec, pred_vec, match_fn) %>%
+      mutate(tool = tool, .before = 1)
+
+    confusion_list[[tool]] <- build_confusion(true_vec, pred_vec, match_fn, classes)
+  }
+
+  list(
+    metrics   = bind_rows(metrics_list),
+    confusion = confusion_list
+  )
+}
+
+# ── Execute per benchmark ──────────────────────────────────────────────────────
+benchmarks <- unique(wide$benchmark)
+
+analysis_types <- list(
+  serotype_exact   = list(col = "true_serotype",  match = "exact"),
+  serotype_within  = list(col = "true_serotype",  match = "within"),
+  serogroup_exact  = list(col = "true_serogroup", match = "exact"),
+  serogroup_within = list(col = "true_serogroup", match = "within")
+)
+
+all_metrics <- list()
+
+for (bm in benchmarks) {
+  bm_data  <- filter(wide, benchmark == bm)
+  bm_label <- gsub("[^A-Za-z0-9]", "_", bm)
+
+  for (nm in names(analysis_types)) {
+    cfg      <- analysis_types[[nm]]
+    result   <- run_analysis(bm_data, cfg$col, cfg$match)
+
+    # Collect metrics
+    all_metrics[[paste(bm_label, nm, sep = "__")]] <- result$metrics %>%
+      mutate(benchmark = bm, analysis = nm, .before = 1)
+
+    # Save per-tool confusion matrices
+    for (tool in tools) {
+      conf     <- result$confusion[[tool]]
+      tool_lbl <- gsub("[^A-Za-z0-9]", "_", tool)
+      out      <- file.path(data_root,
+                            paste0("confusion_", bm_label, "_", nm, "_", tool_lbl, ".csv"))
+      write_csv(tibble(true_class = rownames(conf), conf), out)
+      message("Saved: ", out)
+    }
+  }
+}
+
+# ── Save combined metrics ──────────────────────────────────────────────────────
+metrics_combined <- bind_rows(all_metrics)
+out_metrics <- file.path(data_root, "metrics_all.csv")
+write_csv(metrics_combined, out_metrics)
+message("Saved: ", out_metrics)
+
+message("\nDone.")
