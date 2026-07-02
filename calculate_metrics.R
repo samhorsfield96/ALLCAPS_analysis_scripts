@@ -6,7 +6,8 @@ library(purrr)
 # ── Load data ──────────────────────────────────────────────────────────────────
 data_root <- file.path(dirname(rstudioapi::getSourceEditorContext()$path), "data")
 wide <- read_csv(file.path(data_root, "merged_benchmark_results_wide.csv"),
-                 show_col_types = FALSE)
+                 show_col_types = FALSE) %>%
+  mutate(true_serogroup = as.character(true_serogroup))
 
 tools <- setdiff(names(wide), c("sample_id", "benchmark", "true_serotype", "true_serogroup"))
 
@@ -27,6 +28,7 @@ compute_metrics <- function(true_vec, pred_vec, match_fn) {
     FP <- sum(!actual_pos &  predicted_pos, na.rm = TRUE)
     FN <- sum( actual_pos & !predicted_pos, na.rm = TRUE)
     TN <- sum(!actual_pos & !predicted_pos, na.rm = TRUE)
+    Total <- TP + FN
 
     sensitivity <- if ((TP + FN) > 0) TP / (TP + FN) else NA_real_
     specificity <- if ((TN + FP) > 0) TN / (TN + FP) else NA_real_
@@ -36,7 +38,7 @@ compute_metrics <- function(true_vec, pred_vec, match_fn) {
                      2 * precision * sensitivity / (precision + sensitivity)
                    else NA_real_
 
-    tibble(class = cls, TP, FP, FN, TN, sensitivity, specificity, precision, f1)
+    tibble(class = as.character(cls), TP, FP, FN, TN, Total, sensitivity, specificity, precision, f1)
   })
 }
 
@@ -113,7 +115,7 @@ for (bm in benchmarks) {
     for (tool in tools) {
       conf     <- result$confusion[[tool]]
       tool_lbl <- gsub("[^A-Za-z0-9]", "_", tool)
-      out      <- file.path(data_root,
+      out      <- file.path(data_root, "confusion_matrices",
                             paste0("confusion_", bm_label, "_", nm, "_", tool_lbl, ".csv"))
       write_csv(tibble(true_class = rownames(conf), conf), out)
       message("Saved: ", out)
