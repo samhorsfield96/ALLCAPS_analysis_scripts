@@ -41,26 +41,23 @@ compute_metrics <- function(true_vec, pred_vec, match_fn) {
 }
 
 # ── Helper: build confusion matrix (true rows × predicted cols) ───────────────
-# For "within" match the predicted label is mapped to whichever true class it
-# contains, so the confusion matrix stays in the space of true classes only.
-build_confusion <- function(true_vec, pred_vec, match_fn, classes) {
-  # For each prediction, find which true-class(es) it matches
-  map_pred_to_classes <- function(p) {
-    if (is.na(p)) return(NA_character_)
-    hits <- classes[vapply(classes, function(cls) match_fn(p, cls), logical(1))]
-    if (length(hits) == 0) NA_character_ else hits
-  }
+# Rows = true classes (n), Cols = all unique predicted values (m).
+build_confusion <- function(true_vec, pred_vec, true_classes) {
+  pred_classes <- sort(unique(pred_vec[!is.na(pred_vec)]))
+  all_cols     <- sort(unique(c(true_classes, pred_classes)))
 
-  mat <- matrix(0L, nrow = length(classes), ncol = length(classes),
-                dimnames = list(true = classes, predicted = classes))
+  mat <- matrix(0L,
+                nrow = length(true_classes),
+                ncol = length(all_cols),
+                dimnames = list(true = true_classes, predicted = all_cols))
 
   for (i in seq_along(true_vec)) {
     tc <- true_vec[i]
-    if (is.na(tc) || !(tc %in% classes)) next
-    p_classes <- map_pred_to_classes(pred_vec[i])
-    for (pc in p_classes) {
-      if (!is.na(pc)) mat[tc, pc] <- mat[tc, pc] + 1L
-    }
+    pc <- pred_vec[i]
+    if (is.na(tc) || !(tc %in% true_classes)) next
+    if (is.na(pc)) next
+    if (!(pc %in% all_cols)) next
+    mat[as.character(tc), as.character(pc)] <- mat[as.character(tc), as.character(pc)] + 1L
   }
   as.data.frame(mat)
 }
@@ -80,7 +77,7 @@ run_analysis <- function(data, true_col, match_type) {
     metrics_list[[tool]] <- compute_metrics(true_vec, pred_vec, match_fn) %>%
       mutate(tool = tool, .before = 1)
 
-    confusion_list[[tool]] <- build_confusion(true_vec, pred_vec, match_fn, classes)
+    confusion_list[[tool]] <- build_confusion(true_vec, pred_vec, classes)
   }
 
   list(
@@ -95,7 +92,6 @@ benchmarks <- unique(wide$benchmark)
 analysis_types <- list(
   serotype_exact   = list(col = "true_serotype",  match = "exact"),
   serotype_within  = list(col = "true_serotype",  match = "within"),
-  serogroup_exact  = list(col = "true_serogroup", match = "exact"),
   serogroup_within = list(col = "true_serogroup", match = "within")
 )
 
