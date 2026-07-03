@@ -23,10 +23,10 @@ process_benchmark_dir <- function(dir_path) {
     select(sample_id, true_serotype = Serotype) %>%
     distinct(sample_id, .keep_all = TRUE) %>%
     mutate(
+      true_serotype = trimws(sub("(?i)serogroup\\s*", "", true_serotype, perl = TRUE)),
       true_serotype = sub("^0+([0-9])", "\\1", true_serotype),
       true_serogroup = sub("^([0-9]+).*", "\\1", true_serotype)
-    ) %>%
-    filter(true_serotype %in% allcaps_serotypes)
+    )
 
   # --- Prediction files ---
   pred_files <- setdiff(

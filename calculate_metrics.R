@@ -1,3 +1,4 @@
+library(MLmetrics)
 library(dplyr)
 library(readr)
 library(tidyr)
@@ -37,16 +38,16 @@ compute_metrics <- function(true_vec, pred_vec, match_fn) {
     FN <- sum( actual_pos & !predicted_pos, na.rm = TRUE)
     TN <- sum(!actual_pos & !predicted_pos, na.rm = TRUE)
     Total <- TP + FN
+    
+    f1 <- F1_Score(y_true = actual_pos, y_pred = predicted_pos, positive = TRUE)
+    sensitivity <- Sensitivity(y_true = actual_pos, y_pred = predicted_pos, positive = TRUE)
+    specificity <- Specificity(y_true = actual_pos, y_pred = predicted_pos, positive = TRUE)
+    accuracy <- Accuracy(y_true = actual_pos, y_pred = predicted_pos)
+    precision <- Precision(y_true = actual_pos, y_pred = predicted_pos, positive = TRUE)
 
-    sensitivity <- if ((TP + FN) > 0) TP / (TP + FN) else NA_real_
-    specificity <- if ((TN + FP) > 0) TN / (TN + FP) else NA_real_
-    precision   <- if ((TP + FP) > 0) TP / (TP + FP) else NA_real_
-    f1          <- if (!is.na(precision) && !is.na(sensitivity) &&
-                       (precision + sensitivity) > 0)
-                     2 * precision * sensitivity / (precision + sensitivity)
-                   else NA_real_
-
-    tibble(class = as.character(cls), TP, FP, FN, TN, Total, sensitivity, specificity, precision, f1)
+    row <- tibble(class = as.character(cls), TP, FP, FN, TN, Total, sensitivity, specificity, precision, accuracy, f1)
+    row <- row %>% replace(is.na(.), 0.0)
+    row
   })
 }
 
