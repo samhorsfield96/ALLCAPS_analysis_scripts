@@ -4,6 +4,7 @@ library(tidyr)
 library(ggplot2)
 library(ggtext)
 library(patchwork)
+library(ggrepel)
 
 # ── Load data ──────────────────────────────────────────────────────────────────
 data_root <- file.path(dirname(rstudioapi::getSourceEditorContext()$path), "data")
@@ -143,3 +144,63 @@ for (bm in unique(allcaps_metrics$benchmark)) {
 }
 
 message("\nTraining-size plots done.")
+
+# ── Per-serotype comparison: ALLCAPS vs SeroBA and ALLCAPS vs Pneumo_Typer ────
+comparison_pairs <- list(
+  list(tool_b = "SeroBA",       label = "SeroBA"),
+  list(tool_b = "Pneumo-Typer", label = "Pneumo-Typer")
+)
+
+for (pair in comparison_pairs) {
+  tool_b <- pair$tool_b
+  pair_label <- pair$label
+
+  df_pair <- metrics %>%
+    filter(tool %in% c("ALLCAPS", tool_b)) %>%
+    select(benchmark, analysis, tool, class, all_of(metric_cols)) %>%
+    pivot_longer(all_of(metric_cols), names_to = "metric", values_to = "value") %>%
+    mutate(metric = factor(metric, levels = metric_cols)) %>%
+    pivot_wider(names_from = tool, values_from = value) %>%
+    rename(ALLCAPS_val = ALLCAPS, other_val = all_of(tool_b)) %>%
+    filter(!is.na(ALLCAPS_val) & !is.na(other_val))
+
+  for (bm in unique(df_pair$benchmark)) {
+    for (ana in unique(df_pair$analysis)) {
+      df_plot <- df_pair %>% filter(benchmark == bm, analysis == ana)
+      if (nrow(df_plot) == 0) next
+
+      p <- ggplot(df_plot, aes(x = ALLCAPS_val, y = other_val, label = class)) +
+        geom_abline(slope = 1, intercept = 0, linetype = "dashed", colour = "grey50") +
+        geom_point(colour = "#CC0000", size = 1.8, alpha = 0.7) +
+        geom_text_repel(size = 2, colour = "grey20") +
+        facet_wrap(~metric, ncol = 2, labeller = labeller(metric = metric_labels)) +
+        scale_x_continuous(limits = c(0, 1.05), breaks = seq(0, 1, 0.2)) +
+        scale_y_continuous(limits = c(0, 1.05), breaks = seq(0, 1, 0.2)) +
+        labs(
+          x = "ALLCAPS",
+          y = pair_label
+        ) +
+        theme_bw(base_size = 11) +
+        theme(
+          axis.text.x  = element_text(size = 12),
+          axis.text.y  = element_text(size = 12),
+          strip.text   = element_text(face = "bold", size = 14),
+          axis.title.x = element_text(size = 16),
+          axis.title.y = element_text(size = 16)
+        )
+
+      bm_lbl  <- gsub("[^A-Za-z0-9]", "_", bm)
+      ana_lbl <- gsub("[^A-Za-z0-9]", "_", ana)
+      pair_lbl <- gsub("[^A-Za-z0-9]", "_", pair_label)
+      out_file <- file.path(plot_dir,
+                            paste0("serotype_compare_ALLCAPS_vs_", pair_lbl, "_", bm_lbl, "_", ana_lbl, ".pdf"))
+      ggsave(out_file, p, width = 12, height = 9)
+      out_file <- file.path(plot_dir,
+                            paste0("serotype_compare_ALLCAPS_vs_", pair_lbl, "_", bm_lbl, "_", ana_lbl, ".png"))
+      ggsave(out_file, p, width = 12, height = 9)
+      message("Saved: ", out_file)
+    }
+  }
+}
+
+message("\nPer-serotype comparison plots done.")
