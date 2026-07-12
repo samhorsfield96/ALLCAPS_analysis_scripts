@@ -12,6 +12,7 @@ BiocManager::install("ggtreeExtra")
 library(ggtree)
 library(ggtreeExtra)
 library(ggnewscale)
+library(Polychrome)
 
 # set to false if not generating new intermediate files
 WRITE_NEW_INTERMEDIATE <- FALSE
@@ -86,13 +87,21 @@ merged.df$predicted_serotype <- factor(merged.df$predicted_serotype)
 merged.df <- merged.df[order(merged.df$predicted_serogroup),]
 merged.df$predicted_serogroup <- factor(merged.df$predicted_serogroup)
 
+seroba_meta <- read.csv(file.path(data_root, "seroba_meta.tsv"), sep = "\t", header = FALSE)
+colnames(seroba_meta) <- c("Name", "Genogroup", "Associated_Serotype", "Unknown", "Type")
+seroba_meta[] <- lapply(seroba_meta, function(x) {
+  if (is.character(x)) sub("^0+", "", x) else x
+})
+
+merged.df <- merge(merged.df, seroba_meta, by.x = "predicted_serotype", by.y = "Associated_Serotype", all.x = TRUE, all.y = FALSE) 
+
 if (DOWNSAMPLE == TRUE)
 {
   # --- 1. YOUR DATA DOWNSAMPLING LOGIC ---
   # Calculate serotype proportions per GPSC
   
   # minimum clade to plot
-  min.GPSC.serotype.size <- 10
+  min.GPSC.serotype.size <- 1
   
   proportion_data <- merged.df %>%
     group_by(GPSC, predicted_serogroup) %>%
@@ -141,6 +150,18 @@ if (DOWNSAMPLE == TRUE)
     branch.length = "none"
   )
   
+  # Get the serogroups in a fixed order
+  serogroups <- sort(unique(plot_data$predicted_serogroup))
+  
+  # Generate 48 (or however many are needed) colours
+  cols <- createPalette(
+    length(serogroups),
+    seedcolors = c("#000000", "#E41A1C", "#377EB8", "#4DAF4A")
+  )
+  
+  # Name the colours so ggplot matches them correctly
+  names(cols) <- serogroups
+  
   # Proportion bars
   p <- p +
     geom_fruit(
@@ -155,7 +176,7 @@ if (DOWNSAMPLE == TRUE)
       pwidth = 0.18,
       offset = 0.02
     ) +
-    scale_fill_viridis_d(option = "turbo")
+    scale_fill_manual(values = cols)
   
   # Reference ring at proportion = 1
   p <- p +
@@ -165,16 +186,18 @@ if (DOWNSAMPLE == TRUE)
       mapping = aes(
         y = label,
         x = 0,
-        width = 0.02,
+        width = 0.01,
         height = 1
       ),
       fill = "black",
       inherit.aes = FALSE,
       pwidth = 0.18,
-      offset = 0.02
-    )
+      offset = 0.00
+    ) + labs(fill = "Predicted Serogroup")
   
   p
+  ggsave(file.path(data_root, "plots", "ATB_tree_plot.pdf"), width = 14, height = 10, plot = p)
+
 } else {
   
   # Data to attach to tree
