@@ -7,9 +7,9 @@ library(readr)
 library(ggplot2)
 if (!require("BiocManager", quietly = TRUE)) {
   install.packages("BiocManager")
-  BiocManager::install("ggtree")
-  BiocManager::install("ggtreeExtra")
 }
+BiocManager::install("ggtree", ask = FALSE)
+BiocManager::install("ggtreeExtra", ask = FALSE)
 library(ggtree)
 library(ggtreeExtra)
 library(ggnewscale)
@@ -279,8 +279,8 @@ combined_plot <- ggarrange(
   ncol = 1,
   common.legend = TRUE,
   legend = "right",
-  heights = c(1.5, 1),
-  widths = c(1.5, 1)
+  heights = c(2, 1),
+  widths = c(2, 1)
 )
 combined_plot
 ggsave(file.path(data_root, "plots", "ATB_tree_hist.pdf"), width = 15, height = 10, plot = combined_plot)
