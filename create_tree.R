@@ -286,3 +286,101 @@ combined_plot
 ggsave(file.path(data_root, "plots", "ATB_tree_hist.pdf"), width = 15, height = 10, plot = combined_plot)
 ggsave(file.path(data_root, "plots", "ATB_tree_hist.png"), width = 15, height = 10, plot = combined_plot)
 
+
+# For distirbution of annotation proportions
+box_stats <- top_proportion_data %>%
+  summarise(
+    median = median(Proportion, na.rm = TRUE),
+    Q1 = quantile(Proportion, 0.25, na.rm = TRUE),
+    Q3 = quantile(Proportion, 0.75, na.rm = TRUE)
+  )
+
+p.box100 <- ggplot(top_proportion_data, aes(y = Proportion)) +
+  geom_boxplot() +
+  geom_text(
+    data = box_stats,
+    aes(
+      x = 0.25,
+      y = 0.5,
+      label = paste0(
+        "Q3: ", round(Q3, 2),
+        "\nMedian: ", round(median, 2),
+        "\nQ1: ", round(Q1, 2)
+      )
+    ),
+  ) +
+  theme_light() +
+  theme(
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  ) +
+  ylab("Majority Serotype Proportion") +
+  xlab(NULL)
+
+p.box100
+
+min.GPSC.size <- 1
+
+proportion_data <- merged.df %>%
+  group_by(GPSC, predicted_serogroup) %>%
+  tally() %>%
+  group_by(GPSC) %>%
+  mutate(Proportion = n / sum(n)) %>%
+  filter(!is.na(GPSC)) %>%
+  ungroup() %>%
+  group_by(GPSC) %>%
+  mutate(GPSC_total = sum(n)) %>%
+  filter(GPSC_total > min.GPSC.size) %>%
+  ungroup() %>%
+  mutate(GPSC = forcats::fct_reorder(GPSC, GPSC_total, .desc = TRUE)) %>%
+  arrange(desc(GPSC_total), GPSC)
+
+top_proportion_data <- proportion_data %>%
+  group_by(GPSC) %>%
+  # Keeps the entire row where Proportion is highest for that GPSC
+  slice_max(order_by = Proportion, n = 1, with_ties = FALSE) %>%
+  filter(n > min.GPSC.size) %>%
+  ungroup() 
+
+box_stats <- top_proportion_data %>%
+  summarise(
+    median = median(Proportion, na.rm = TRUE),
+    Q1 = quantile(Proportion, 0.25, na.rm = TRUE),
+    Q3 = quantile(Proportion, 0.75, na.rm = TRUE)
+  )
+
+p.box1 <- ggplot(top_proportion_data, aes(y = Proportion)) +
+  geom_boxplot() +
+  geom_text(
+    data = box_stats,
+    aes(
+      x = 0.25,
+      y = 0.5,
+      label = paste0(
+        "Q3: ", round(Q3, 2),
+        "\nMedian: ", round(median, 2),
+        "\nQ1: ", round(Q1, 2)
+      )
+    ),
+  ) +
+  theme_light() +
+  theme(
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  ) +
+  ylab("Majority Serotype Proportion") +
+  xlab(NULL)
+
+p.box1
+
+combined_box <- ggarrange(
+  p.box100,
+  p.box1,
+  labels = c("A", "B"),
+  ncol = 2,
+  heights = c(1, 1),
+  widths = c(1, 1)
+)
+combined_box
+
+ggsave(file.path(data_root, "plots", "ATB_GPSC_Serotype_proportions.png"), width = 8, height = 4, plot = combined_box)
