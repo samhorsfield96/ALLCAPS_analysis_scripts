@@ -72,9 +72,6 @@ process_benchmark_dir <- function(dir_path) {
 # --- Main ---
 data_root <- file.path(dirname(rstudioapi::getSourceEditorContext()$path), "data")
 
-# Alternatively, set the path manually:
-# data_root <- "/Users/samhorsfield/Software/ALLCAPS_analysis_scripts/data"
-
 benchmark_dirs <- list.dirs(data_root, recursive = FALSE, full.names = TRUE)
 
 all_results <- lapply(benchmark_dirs, process_benchmark_dir)
