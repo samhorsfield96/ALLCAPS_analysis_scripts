@@ -384,3 +384,41 @@ combined_box <- ggarrange(
 combined_box
 
 ggsave(file.path(data_root, "plots", "ATB_GPSC_Serotype_proportions.png"), width = 8, height = 4, plot = combined_box)
+
+# number of difference serotypes within each GPSC
+within_GPSC_difference <- proportion_data %>%
+  group_by(GPSC) %>%
+  summarise(n_classes = n_distinct(predicted_serogroup))
+
+box_stats <- within_GPSC_difference %>%
+  summarise(
+    median = median(n_classes, na.rm = TRUE),
+    Q1 = quantile(n_classes, 0.25, na.rm = TRUE),
+    Q3 = quantile(n_classes, 0.75, na.rm = TRUE)
+  )
+
+p.box.GPSC <- ggplot(within_GPSC_difference, aes(y = n_classes)) +
+  geom_boxplot() +
+  geom_text(
+    data = box_stats,
+    aes(
+      x = 0.25,
+      y = 10,
+      label = paste0(
+        "Q3: ", round(Q3, 2),
+        "\nMedian: ", round(median, 2),
+        "\nQ1: ", round(Q1, 2)
+      )
+    ),
+  ) +
+  theme_light() +
+  theme(
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank()
+  ) +
+  ylab("Number of serotypes per GPSC") +
+  xlab(NULL)
+
+p.box.GPSC
+
+ggsave(file.path(data_root, "plots", "ATB_GPSC_Serotype_number.png"), width = 4, height = 4, plot = p.box.GPSC)
