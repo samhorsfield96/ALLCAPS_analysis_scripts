@@ -1,4 +1,4 @@
-tip,predicted_serogroup,n,Proportion,GPSC_total
+label,predicted_serogroup,n,Proportion,GPSC_total
 12,3,5869,0.999829642248722,5870
 1,19,5484,0.974760042659083,5626
 3,11,1797,0.319750889679715,5620

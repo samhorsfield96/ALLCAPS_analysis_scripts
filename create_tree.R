@@ -5,10 +5,11 @@ library(stringr)
 library(tidyr)
 library(readr)
 library(ggplot2)
-if (!require("BiocManager", quietly = TRUE))
+if (!require("BiocManager", quietly = TRUE)) {
   install.packages("BiocManager")
-BiocManager::install("ggtree")
-BiocManager::install("ggtreeExtra")
+  BiocManager::install("ggtree")
+  BiocManager::install("ggtreeExtra")
+}
 library(ggtree)
 library(ggtreeExtra)
 library(ggnewscale)
@@ -122,7 +123,6 @@ top_proportion_data <- proportion_data %>%
   ungroup() 
 
 
-#TODO: test out adding links between GPSCs where the same serotype is present (showing transfer across tree)
 if (DOWNSAMPLE == TRUE)
 {
   # --- 1. YOUR DATA DOWNSAMPLING LOGIC ---
@@ -146,14 +146,10 @@ if (DOWNSAMPLE == TRUE)
   
   # Format data frame to match the new tip labels (GPSC names) for the facet plot
   plot_data <- top_proportion_data %>%
-    rename(tip = GPSC)
+    rename(label = GPSC)
   write.csv(plot_data, file.path(data_root, "per_GPSC_data.csv"), row.names = FALSE, quote = FALSE)
   
   # --- 2. THE LINEAR FACET PLOT (TDbook Architecture) ---
- 
-  # Data to attach to tree
-  plot_data <- top_proportion_data %>%
-    rename(label = GPSC)   # geom_fruit matches on the tree tip labels
   
   p <- ggtree(
     collapsed_tree,
@@ -162,8 +158,7 @@ if (DOWNSAMPLE == TRUE)
   )
   
   # Define ordered serogroups
-  serogroups <- sort(as.numeric(unique(plot_data$predicted_serogroup)))
-  serogroups <- as.character(serogroups)
+  serogroups <- sort(as.numeric(unique(as.character(plot_data$predicted_serogroup))))
   
   # Set factor order
   plot_data$predicted_serogroup <- factor(
@@ -289,3 +284,5 @@ combined_plot <- ggarrange(
 )
 combined_plot
 ggsave(file.path(data_root, "plots", "ATB_tree_hist.pdf"), width = 15, height = 10, plot = combined_plot)
+ggsave(file.path(data_root, "plots", "ATB_tree_hist.png"), width = 15, height = 10, plot = combined_plot)
+
