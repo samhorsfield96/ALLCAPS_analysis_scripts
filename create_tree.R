@@ -13,6 +13,7 @@ library(ggtree)
 library(ggtreeExtra)
 library(ggnewscale)
 library(Polychrome)
+library(ggpubr)
 
 # set to false if not generating new intermediate files
 WRITE_NEW_INTERMEDIATE <- FALSE
@@ -95,27 +96,37 @@ seroba_meta[] <- lapply(seroba_meta, function(x) {
 
 merged.df <- merge(merged.df, seroba_meta, by.x = "predicted_serotype", by.y = "Associated_Serotype", all.x = TRUE, all.y = FALSE) 
 
+# generate GPSC proportion data
+# minimum clade to plot
+min.GPSC.size <- 100
+
+proportion_data <- merged.df %>%
+  group_by(GPSC, predicted_serogroup) %>%
+  tally() %>%
+  group_by(GPSC) %>%
+  mutate(Proportion = n / sum(n)) %>%
+  filter(!is.na(GPSC)) %>%
+  ungroup() %>%
+  group_by(GPSC) %>%
+  mutate(GPSC_total = sum(n)) %>%
+  filter(GPSC_total > min.GPSC.size) %>%
+  ungroup() %>%
+  mutate(GPSC = forcats::fct_reorder(GPSC, GPSC_total, .desc = TRUE)) %>%
+  arrange(desc(GPSC_total), GPSC)
+
+top_proportion_data <- proportion_data %>%
+  group_by(GPSC) %>%
+  # Keeps the entire row where Proportion is highest for that GPSC
+  slice_max(order_by = Proportion, n = 1, with_ties = FALSE) %>%
+  filter(n > min.GPSC.size) %>%
+  ungroup() 
+
+
+#TODO: test out adding links between GPSCs where the same serotype is present (showing transfer across tree)
 if (DOWNSAMPLE == TRUE)
 {
   # --- 1. YOUR DATA DOWNSAMPLING LOGIC ---
   # Calculate serotype proportions per GPSC
-  
-  # minimum clade to plot
-  min.GPSC.serotype.size <- 1
-  
-  proportion_data <- merged.df %>%
-    group_by(GPSC, predicted_serogroup) %>%
-    tally() %>%
-    group_by(GPSC) %>%
-    mutate(Proportion = n / sum(n)) %>%
-    ungroup()
-  
-  top_proportion_data <- proportion_data %>%
-    group_by(GPSC) %>%
-    # Keeps the entire row where Proportion is highest for that GPSC
-    slice_max(order_by = Proportion, n = 1, with_ties = FALSE) %>%
-    filter(n > min.GPSC.serotype.size) %>%
-    ungroup() 
   
   # Identify one representative tip per GPSC
   representatives <- inner_join(top_proportion_data, merged.df, by = "GPSC") %>%
@@ -150,16 +161,23 @@ if (DOWNSAMPLE == TRUE)
     branch.length = "none"
   )
   
-  # Get the serogroups in a fixed order
-  serogroups <- sort(unique(plot_data$predicted_serogroup))
+  # Define ordered serogroups
+  serogroups <- sort(as.numeric(unique(plot_data$predicted_serogroup)))
+  serogroups <- as.character(serogroups)
   
-  # Generate 48 (or however many are needed) colours
+  # Set factor order
+  plot_data$predicted_serogroup <- factor(
+    plot_data$predicted_serogroup,
+    levels = serogroups
+  )
+  
+  # Generate colours
   cols <- createPalette(
     length(serogroups),
     seedcolors = c("#000000", "#E41A1C", "#377EB8", "#4DAF4A")
   )
   
-  # Name the colours so ggplot matches them correctly
+  # Name colours by factor levels
   names(cols) <- serogroups
   
   # Proportion bars
@@ -210,6 +228,18 @@ if (DOWNSAMPLE == TRUE)
     branch.length = "none"
   )
   
+  # Get the serogroups in a fixed order
+  serogroups <- sort(unique(plot_data$predicted_serogroup))
+  
+  # Generate 48 (or however many are needed) colours
+  cols <- createPalette(
+    length(serogroups),
+    seedcolors = c("#000000", "#E41A1C", "#377EB8", "#4DAF4A")
+  )
+  
+  # Name the colours so ggplot matches them correctly
+  names(cols) <- serogroups
+  
   p <- p +
     geom_fruit(
       data = plot_data,
@@ -224,10 +254,7 @@ if (DOWNSAMPLE == TRUE)
       offset = 0.02,
       pwidth = 0.08
     ) +
-    scale_fill_viridis_d(
-      option = "turbo",
-      name = "Serotype"
-    ) +
+    scale_fill_manual(values = cols) +
     theme(
       legend.position = "right"
     )
@@ -236,8 +263,29 @@ if (DOWNSAMPLE == TRUE)
   
 }
 
+proportion_data$predicted_serogroup <- factor(
+  proportion_data$predicted_serogroup,
+  levels = serogroups
+)
 
+p.dist <- ggplot(proportion_data, aes(x=GPSC, y=n, group=GPSC, fill = predicted_serogroup)) +
+  geom_col() +
+  scale_fill_manual(values = cols) +
+  theme_light() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6)) +
+  ylab("Total genomes") +
+  xlab("GPSC") 
+p.dist
 
-
-
-
+combined_plot <- ggarrange(
+  p,
+  p.dist,
+  labels = c("A", "B"),
+  ncol = 1,
+  common.legend = TRUE,
+  legend = "right",
+  heights = c(1.5, 1),
+  widths = c(1.5, 1)
+)
+combined_plot
+ggsave(file.path(data_root, "plots", "ATB_tree_hist.pdf"), width = 15, height = 10, plot = combined_plot)
