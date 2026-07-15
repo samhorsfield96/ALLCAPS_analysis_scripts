@@ -3,6 +3,8 @@ library(readr)
 library(tidyr)
 library(Polychrome)
 library(ggplot2)
+library(ggpubr)
+library(stringr)
 
 data_root <- file.path(dirname(rstudioapi::getSourceEditorContext()$path), "data")
 metrics   <- read.csv(file.path(data_root, "knn-sweep", "k_sweep_per_fold.csv"))
@@ -38,39 +40,87 @@ names(cols) <- serogroups
 # pick which k to plot
 k_vals <- sort(unique(metrics$k))
 
-# iterate over k values
-for (k_val in k_vals) {
+p_list <- list()
+
+for (i in seq_along(k_vals)) {
+  
+  k_val <- k_vals[i]
   k_df <- subset(metrics, k == k_val)
   
+  # order by auroc
   k_df <- k_df[order(-k_df$auroc), ]
+  k_df$serotype <- factor(k_df$serotype, levels = k_df$serotype)
   
-  k_df$serotype <- factor(
-    k_df$serotype,
-    levels = k_df$serotype
-  )
-  
-  p <-ggplot(k_df, aes(x =reorder(serotype, -auroc), serotype, y = auroc, fill = serogroup)) +
+  p <- ggplot(k_df, aes(x = serotype, y = auroc, fill = serogroup)) +
     geom_col() +
-    theme_bw(base_size = 11) +
-    theme(
-      axis.text.x  = element_text(angle = 40, hjust = 1, size = 12),
-      axis.text.y  = element_text(size = 12),
-      strip.text   = element_text(face = "bold", size = 14),
-      axis.title.y = element_text(size = 16),
-      axis.title.x = element_text(size = 16),
-      legend.title = element_text(size = 16),
-      legend.position = "right"
-    ) +
+    geom_hline(yintercept = 0.5, linetype = "dashed") +
     scale_fill_manual(
       values = cols,
-      breaks = as.character(serogroups)  # legend in ascending order
+      breaks = as.character(serogroups)
     ) +
-    xlab("Serotype") +
-    ylab("AUROC") +
-    labs(fill = "Serogroup") +
-    geom_hline(yintercept = 0.5, linetype="dashed")
-  p
+    labs(
+      x = "Serotype",
+      y = "AUROC",
+      fill = "Serogroup"
+    ) +
+    theme_bw(base_size = 11) +
+    theme(
+      axis.text.x = element_text(angle = 40, hjust = 1, size = 12),
+      axis.text.y = element_text(size = 12),
+      axis.title.x = element_text(size = 16, face = "bold"),
+      axis.title.y = element_text(size = 16, face = "bold"),
+      legend.title = element_text(size = 16, face="bold"),
+      legend.position = "right"
+    )
   
   ggsave(paste0(file.path(plot_dir, "knn_"), k_val, ".pdf"), plot=p, width = 18, height = 6)
   ggsave(paste0(file.path(plot_dir, "knn_"), k_val, ".png"), plot=p, width = 18, height = 6)
 }
+
+# Ensure k is ordered numerically
+metrics <- metrics %>%
+  arrange(
+    as.numeric(as.character(serogroup)),
+    as.numeric(str_extract(serotype, "^\\d+")),
+    str_extract(serotype, "[A-Za-z]+$")
+  )
+
+metrics$serotype <- factor(
+  metrics$serotype,
+  levels = unique(metrics$serotype)
+)
+
+p.all <- ggplot(
+  metrics,
+  aes(
+    x = k,
+    y = auroc,
+    colour = serogroup
+  )
+) +
+  geom_point(size = 3) +
+  geom_line() +
+  geom_hline(yintercept = 0.5, linetype = "dashed") +
+  facet_wrap(~ serotype) +   # replace facet_variable with your column
+  theme_light() +
+  labs(
+    x = "K-value",
+    y = "AUROC"
+  ) +
+  theme(
+    strip.text = element_text(face = "bold", size = 14),
+    axis.text = element_text(size = 12),
+    axis.title = element_text(size = 14),
+    legend.position = "none"
+  ) + 
+  scale_x_log10() +
+  scale_colour_manual(
+    values = cols,
+    breaks = as.character(serogroups)
+  ) +
+  scale_y_continuous(limits = c(0, 1.0))
+p.all
+
+ggsave(file.path(plot_dir, "knn_all.png"), plot=p.all, width = 18, height = 12)
+ggsave(file.path(plot_dir, "knn_all.pdf"), plot=p.all, width = 18, height = 12)
+
