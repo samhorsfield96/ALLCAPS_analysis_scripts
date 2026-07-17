@@ -5,6 +5,7 @@ library(Polychrome)
 library(ggplot2)
 library(ggpubr)
 library(stringr)
+library(ggsci)
 
 data_root <- file.path(dirname(rstudioapi::getSourceEditorContext()$path), "data")
 metrics   <- read.csv(file.path(data_root, "knn-sweep", "k_sweep_per_fold.csv"))
@@ -124,3 +125,49 @@ p.all
 ggsave(file.path(plot_dir, "knn_all.png"), plot=p.all, width = 18, height = 12)
 ggsave(file.path(plot_dir, "knn_all.pdf"), plot=p.all, width = 18, height = 12)
 
+# generate plot showing best K for each serotype
+p.box <- ggplot(
+  metrics,
+  aes(
+    x = as.factor(sort(k)),
+    y = auroc,
+    colour = as.factor(sort(k))
+  )
+) +
+  geom_boxplot() +
+  geom_hline(yintercept = 0.5, linetype = "dashed") +
+  theme_light() +
+  labs(
+    x = "K-value",
+    y = "AUROC"
+  ) +
+  # Mean point
+  stat_summary(
+    fun = median,
+    geom = "point",
+    shape = 18,
+    size = 3,
+    colour = "black"
+  ) +
+  
+  # Mean value as text
+  stat_summary(
+    fun = median,
+    geom = "text",
+    aes(label = sprintf("%.3f", after_stat(y))),
+    vjust = -0.7,
+    colour = "black",
+    size = 3.5
+  ) +
+  theme(
+    strip.text = element_text(face = "bold", size = 14),
+    axis.text = element_text(size = 12),
+    axis.title = element_text(size = 14),
+    legend.position = "none"
+  ) + 
+  scale_color_npg() +
+  scale_y_continuous(limits = c(0, 1.0))
+p.box
+
+ggsave(file.path(plot_dir, "k_vs_AUROC_boxplot.png"), plot=p.box, width = 9, height = 6)
+ggsave(file.path(plot_dir, "k_vs_AUROC_boxplot.pdf"), plot=p.box, width = 9, height = 6)
