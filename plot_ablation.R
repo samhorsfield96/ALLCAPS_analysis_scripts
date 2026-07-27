@@ -14,7 +14,6 @@ allcaps_serotypes <- read_csv(
   show_col_types = FALSE
 )$Serotypes
 
-
 # Process a single benchmark directory and return a merged data frame
 process_benchmark_dir <- function(dir_path) {
   message("Processing: ", dir_path)
@@ -44,14 +43,14 @@ process_benchmark_dir <- function(dir_path) {
     group_by(sample_id) %>%
     slice_max(order_by = serotype_confidence, n = 1, with_ties = FALSE) %>%
     ungroup() %>%
-    mutate(pred_argmax = sub("^0+([0-9])", "\\1", pred_argmax)) %>%
+    #mutate(pred_argmax = sub("^0+([0-9])", "\\1", pred_argmax)) %>%
     select(sample_id, ALLCAPS = pred_argmax)
   
   prokbert_pred_file <- file.path(dir_path, "prokbert_predictions.csv")
   prokbert_pred_df <- read_csv(prokbert_pred_file, show_col_types = FALSE) %>%
     filter(!grepl("NONCBL#", sample_id, fixed = TRUE)) %>%
     mutate(sample_id = sub("#.*$", "", sample_id)) %>%
-    mutate(pred_argmax = sub("^0+([0-9])", "\\1", pred_argmax)) %>%
+    #mutate(pred_argmax = sub("^0+([0-9])", "\\1", pred_argmax)) %>%
     select(sample_id, ProkBERT = pred_argmax)
 
   merged <- ground_truth %>%
@@ -70,7 +69,7 @@ exact_match_serotype  <- function(vec, cls) !is.na(vec) & vec == cls
 exact_match_serogroup <- function(vec, cls) {
   sub_cls <- sub("^([0-9]+).*", "\\1", cls)
   sub_vec = sub("^([0-9]+).*", "\\1", vec)
-  !is.na(sub_vec) & sub_vec == cls
+  !is.na(sub_vec) & sub_vec == sub_cls
 } 
 within_match <- function(vec, cls) !is.na(vec) & grepl(cls, vec, fixed = TRUE)
 
@@ -127,6 +126,9 @@ run_analysis <- function(data, true_col, match_type) {
 
 dir_path <- file.path(data_root, "GPS_benchmark")
 combined <- process_benchmark_dir(dir_path)
+# remove ambiguous true serotype calls
+combined <- combined %>%
+  filter(true_serotype %in% allcaps_serotypes)
 
 out_file <- file.path(data_root, "merged_ablation.csv")
 write_csv(combined, out_file)
@@ -152,6 +154,7 @@ for (nm in names(analysis_types)) {
 
 # ── Save combined metrics ──────────────────────────────────────────────────────
 metrics <- bind_rows(all_metrics)
+
 out_metrics <- file.path(data_root, "metrics_ablation_all.csv")
 write_csv(metrics, out_metrics)
 message("Saved: ", out_metrics)

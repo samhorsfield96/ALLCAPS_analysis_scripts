@@ -1,4 +1,4 @@
-,serotype,serotype_confidence,pred_argmax
+sample_id,serotype,serotype_confidence,pred_argmax
 ERR9796495#1,33C,0.925,33C
 ERR869890#6,17A,0.431,17A
 ERR1788168#2,36,0.897,36

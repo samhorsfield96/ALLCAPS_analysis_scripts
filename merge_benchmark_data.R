@@ -48,6 +48,9 @@ process_benchmark_dir <- function(dir_path) {
         ungroup() %>%
         select(sample_id, predicted_serotype = pred_argmax, is_cbl = is_cbl, is_novel_energy = is_novel_energy) %>%
         mutate(tool = "ALLCAPS")
+    } else if (grepl("prokbert", basename(f), ignore.case = TRUE)) {
+      # ignore prokbert as part of ablation
+      return(NULL)
     } else {
       # Standard format: sample_id, tool, predicted_serotype
       df <- read_csv(f, show_col_types = FALSE) %>%
