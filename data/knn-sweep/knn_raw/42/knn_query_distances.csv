@@ -1,0 +1,4 @@
+sample_id,knn_distance,nn_distance,nn_serotype,nn_genogroup,is_novel
+ERR1453593#2,0.013803065,0.013803065,35C,35A_35C_42,False
+ERR3655317#13,0.25357664,0.25357664,18C,18,True
+SRR26749339#1,0.014918864,0.014918864,35C,35A_35C_42,False

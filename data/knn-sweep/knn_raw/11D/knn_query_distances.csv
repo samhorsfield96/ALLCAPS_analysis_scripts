@@ -1,0 +1,3 @@
+sample_id,knn_distance,nn_distance,nn_serotype,nn_genogroup,is_novel
+SRR26910902#16,0.0,0.0,11A,11,False
+SRR26790191#6,0.0728876,0.0728876,11A,11,False

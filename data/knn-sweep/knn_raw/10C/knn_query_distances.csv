@@ -1,0 +1,2 @@
+sample_id,knn_distance,nn_distance,nn_serotype,nn_genogroup,is_novel
+ERR1192165#1,0.103406906,0.103406906,10F,10,False

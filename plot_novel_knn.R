@@ -18,6 +18,7 @@ allcaps_serotypes <- read.csv(
             "data", "ALLCAPS_possible_serotypes.csv")
 )$Serotypes
 
+
 metrics <- metrics %>%
   rename(serotype = fold) %>%
   mutate(
@@ -158,44 +159,6 @@ p.box <- ggplot(
     colour = "black",
     size = 3.5
   ) +
-  
-  # # Min point
-  # stat_summary(
-  #   fun = min,
-  #   geom = "point",
-  #   shape = 4,
-  #   size = 3,
-  #   colour = "black"
-  # ) +
-  # 
-  # # Min value as text
-  # stat_summary(
-  #   fun = min,
-  #   geom = "text",
-  #   aes(label = sprintf("%.3f", after_stat(y))),
-  #   vjust = 1.7,
-  #   colour = "black",
-  #   size = 3.5
-  # ) +
-  # # Max point
-  # stat_summary(
-  #   fun = max,
-  #   geom = "point",
-  #   shape = 4,
-  #   size = 3,
-  #   colour = "black"
-  # ) +
-  # 
-  # # Max value as text
-  # stat_summary(
-  #   fun = max,
-  #   geom = "text",
-  #   aes(label = sprintf("%.3f", after_stat(y))),
-  #   vjust = -0.7,
-  #   colour = "black",
-  #   size = 3.5
-  # ) +
-  
   theme(
     strip.text = element_text(face = "bold", size = 14),
     axis.text = element_text(size = 12),
@@ -209,5 +172,55 @@ p.box
 ggsave(file.path(plot_dir, "k_vs_AUROC_boxplot.png"), plot=p.box, width = 9, height = 6)
 ggsave(file.path(plot_dir, "k_vs_AUROC_boxplot.pdf"), plot=p.box, width = 9, height = 6)
 
-# TODO create combined figure that shows serotype AUROC and novel detection closest serogroup assignment.
+# TODO combine all knn-raw data into single table, then determine assignment to model serogroups rather than serotypes
+# analyse closest nearest neighbour
+nn_metrics   <- read.csv(file.path(data_root, "knn-sweep", "knn_nn_summary.csv"))
 
+nn_metrics <- nn_metrics %>%
+  rename(serotype = held_out_serotype) %>%
+  mutate(
+    serotype = trimws(sub("(?i)serogroup\\s*", "", serotype, perl = TRUE)),
+    serotype = sub("^0+([0-9])", "\\1", serotype),
+    serogroup = sub("^([0-9]+).*", "\\1", serotype),
+    modal_nn_serotype = trimws(sub("(?i)serogroup\\s*", "", modal_nn_serotype, perl = TRUE)),
+    modal_nn_serotype =sub("^0+([0-9])", "\\1", modal_nn_serotype),
+    modal_nn_serogroup = sub("^([0-9]+).*", "\\1", modal_nn_serotype),
+  )  %>%
+  # remove ambiguous true serotype calls
+  filter(serotype %in% allcaps_serotypes) |>
+  select(serotype, serogroup, n_query, modal_nn_serotype, modal_nn_serogroup, modal_nn_serotype_frac,
+         median_nn_distance)
+nn_metrics$within_serogroup = ifelse((nn_metrics$serotype != nn_metrics$serogroup), TRUE, FALSE)
+
+# order by modal frequency
+nn_metrics <- nn_metrics[order(-nn_metrics$modal_nn_serotype_frac), ]
+nn_metrics$serotype <- factor(nn_metrics$serotype, levels = nn_metrics$serotype)
+
+nn_metrics$bar_colour <- ifelse(nn_metrics$within_serogroup, "#CC0000", "lightgrey")
+
+p <- ggplot(nn_metrics, aes(x = serotype, y = modal_nn_serotype_frac, fill = bar_colour)) +
+  geom_col() +
+  scale_fill_identity() +
+  labs(
+    x = "Serotype",
+    y = "Prop. serotypes assigned",
+  ) +
+  geom_text(
+    aes(label = modal_nn_serogroup),
+    hjust = -0.1,
+    angle = 90,
+    size = 3
+  ) +
+  theme_bw(base_size = 11) +
+  theme(
+    axis.text.x = element_text(angle = 40, hjust = 1, size = 12),
+    axis.text.y = element_text(size = 12),
+    axis.title.x = element_text(size = 16, face = "bold"),
+    axis.title.y = element_text(size = 16, face = "bold"),
+    legend.title = element_text(size = 16, face="bold"),
+    legend.position = "right"
+  ) + coord_cartesian(ylim = c(0.0, 1.0))
+p
+
+ggsave(paste0(file.path(plot_dir, "novel_nn_assignment", ".pdf")), plot=p, width = 18, height = 6)
+ggsave(paste0(file.path(plot_dir, "novel_nn_assignment", ".png")), plot=p, width = 18, height = 6)
