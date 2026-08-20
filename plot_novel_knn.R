@@ -6,6 +6,7 @@ library(ggplot2)
 library(ggpubr)
 library(stringr)
 library(ggsci)
+library(ggpubr)
 
 data_root <- file.path(dirname(rstudioapi::getSourceEditorContext()$path), "data")
 metrics   <- read.csv(file.path(data_root, "knn-sweep", "k_sweep_per_fold.csv"))
@@ -52,17 +53,15 @@ for (i in seq_along(k_vals)) {
   k_df <- k_df[order(-k_df$auroc), ]
   k_df$serotype <- factor(k_df$serotype, levels = k_df$serotype)
   
-  p <- ggplot(k_df, aes(x = serotype, y = auroc, fill = serogroup)) +
+  k_df$bar_colour <- ifelse(seq_len(nrow(k_df)) %% 2 == 0, "darkgrey", "lightgrey")
+  
+  p <- ggplot(k_df, aes(x = serotype, y = auroc, fill = bar_colour)) +
     geom_col() +
     geom_hline(yintercept = 0.5, linetype = "dashed") +
-    scale_fill_manual(
-      values = cols,
-      breaks = as.character(serogroups)
-    ) +
+    scale_fill_identity() +
     labs(
       x = "Serotype",
       y = "AUROC",
-      fill = "Serogroup"
     ) +
     theme_bw(base_size = 11) +
     theme(
@@ -72,7 +71,7 @@ for (i in seq_along(k_vals)) {
       axis.title.y = element_text(size = 16, face = "bold"),
       legend.title = element_text(size = 16, face="bold"),
       legend.position = "right"
-    )
+    ) + coord_cartesian(ylim = c(0.4, 1.0))
   
   ggsave(paste0(file.path(plot_dir, "knn_"), k_val, ".pdf"), plot=p, width = 18, height = 6)
   ggsave(paste0(file.path(plot_dir, "knn_"), k_val, ".png"), plot=p, width = 18, height = 6)
@@ -129,12 +128,12 @@ ggsave(file.path(plot_dir, "knn_all.pdf"), plot=p.all, width = 18, height = 12)
 p.box <- ggplot(
   metrics,
   aes(
-    x = as.factor(sort(k)),
+    x = as.factor(k),
     y = auroc,
-    colour = as.factor(sort(k))
+    colour = as.factor(k)
   )
 ) +
-  geom_boxplot() +
+  geom_boxplot(outliers = TRUE) +
   geom_hline(yintercept = 0.5, linetype = "dashed") +
   theme_light() +
   labs(
@@ -155,10 +154,48 @@ p.box <- ggplot(
     fun = median,
     geom = "text",
     aes(label = sprintf("%.3f", after_stat(y))),
-    vjust = -0.7,
+    vjust = 2.0,
     colour = "black",
     size = 3.5
   ) +
+  
+  # # Min point
+  # stat_summary(
+  #   fun = min,
+  #   geom = "point",
+  #   shape = 4,
+  #   size = 3,
+  #   colour = "black"
+  # ) +
+  # 
+  # # Min value as text
+  # stat_summary(
+  #   fun = min,
+  #   geom = "text",
+  #   aes(label = sprintf("%.3f", after_stat(y))),
+  #   vjust = 1.7,
+  #   colour = "black",
+  #   size = 3.5
+  # ) +
+  # # Max point
+  # stat_summary(
+  #   fun = max,
+  #   geom = "point",
+  #   shape = 4,
+  #   size = 3,
+  #   colour = "black"
+  # ) +
+  # 
+  # # Max value as text
+  # stat_summary(
+  #   fun = max,
+  #   geom = "text",
+  #   aes(label = sprintf("%.3f", after_stat(y))),
+  #   vjust = -0.7,
+  #   colour = "black",
+  #   size = 3.5
+  # ) +
+  
   theme(
     strip.text = element_text(face = "bold", size = 14),
     axis.text = element_text(size = 12),
@@ -171,3 +208,6 @@ p.box
 
 ggsave(file.path(plot_dir, "k_vs_AUROC_boxplot.png"), plot=p.box, width = 9, height = 6)
 ggsave(file.path(plot_dir, "k_vs_AUROC_boxplot.pdf"), plot=p.box, width = 9, height = 6)
+
+# TODO create combined figure that shows serotype AUROC and novel detection closest serogroup assignment.
+
