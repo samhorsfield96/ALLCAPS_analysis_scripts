@@ -1,24 +1,28 @@
 library(dplyr)
 library(readr)
 library(tidyr)
+library(purrr)
 library(Polychrome)
 library(ggplot2)
 library(ggpubr)
 library(stringr)
 library(ggsci)
 library(ggpubr)
+library(MLmetrics)
 
 data_root <- file.path(dirname(rstudioapi::getSourceEditorContext()$path), "data")
 metrics   <- read.csv(file.path(data_root, "knn-sweep", "k_sweep_per_fold.csv"))
+ground_truth <- read.csv(file.path(data_root, "GPS_benchmark", "ground_truth.csv"))
 plot_dir <- file.path(data_root, "plots")
 dir.create(plot_dir, showWarnings = FALSE)
+create_merged_knn_file <- FALSE
 
 allcaps_serotypes <- read.csv(
   file.path(dirname(rstudioapi::getSourceEditorContext()$path),
             "data", "ALLCAPS_possible_serotypes.csv")
 )$Serotypes
 
-
+# read in AUROC metrics
 metrics <- metrics %>%
   rename(serotype = fold) %>%
   mutate(
@@ -224,3 +228,122 @@ p
 
 ggsave(paste0(file.path(plot_dir, "novel_nn_assignment", ".pdf")), plot=p, width = 18, height = 6)
 ggsave(paste0(file.path(plot_dir, "novel_nn_assignment", ".png")), plot=p, width = 18, height = 6)
+
+#create figure showing classification accuracy of different novel and non-novel samples as well as average distance for novel and non-novel
+process_knn_raw <- function(file) {
+  df <- read_csv(file, show_col_types = FALSE)
+  
+  file_str_list <- strsplit(file, "/")[[1]]
+  loo_serotype <- file_str_list[length(file_str_list) - 1]
+  
+  sample_id_new <- str_split_fixed(df$sample_id, "#", 2)
+  df$sample_id <- sample_id_new[,1]
+  df$Contig_ID <- sample_id_new[,2]
+  
+  df$Contig_ID <- as.character(df$Contig_ID)
+  df$nn_genogroup <- as.character(df$nn_genogroup)
+  
+  df$loo_serotype <- loo_serotype
+  df$nn_serotype <- as.character(df$nn_serotype)
+  
+  df <- df %>%
+    mutate(
+      loo_serotype = trimws(sub("(?i)serogroup\\s*", "", loo_serotype, perl = TRUE)),
+      loo_serotype = sub("^0+([0-9])", "\\1", loo_serotype),
+      loo_serogroup = sub("^([0-9]+).*", "\\1", loo_serotype),
+      nn_serotype = trimws(sub("(?i)serogroup\\s*", "", nn_serotype, perl = TRUE)),
+      nn_serotype =sub("^0+([0-9])", "\\1", nn_serotype),
+      nn_serogroup = sub("^([0-9]+).*", "\\1", nn_serotype),
+      nn_genogroup = trimws(sub("(?i)serogroup\\s*", "", nn_genogroup, perl = TRUE))
+    )
+  
+  df <- df |>
+    select(sample_id, Contig_ID, loo_serotype, loo_serogroup, knn_distance, nn_distance, nn_serotype, nn_serogroup, nn_genogroup, is_novel)
+  
+  df
+}
+
+# create merged file of knn distances at K=1
+if (create_merged_knn_file) {
+  files <- list.files(file.path(data_root, "knn-sweep", "knn_raw"), pattern = "knn_query_distances.csv", recursive = TRUE, full.names = TRUE)
+  all_results <- lapply(files, process_knn_raw)
+  combined_query <- bind_rows(all_results)
+  combined_query$is_held_out <- TRUE
+  
+  files <- list.files(file.path(data_root, "knn-sweep", "knn_raw"), pattern = "knn_id_distances.csv", recursive = TRUE, full.names = TRUE)
+  all_results <- lapply(files, process_knn_raw)
+  combined_training <- bind_rows(all_results)
+  combined_training$is_held_out <- FALSE
+  
+  combined <- rbind(combined_query, combined_training)
+  
+  ground_truth$Contig_ID <- as.character(ground_truth$Contig_ID)
+
+  # merge with serotype information
+  combined_merged <- left_join(combined, ground_truth, by = c("sample_id", "Contig_ID"))
+  combined_merged$Is_capsule <- ifelse(combined_merged$Is_capsule == 1, TRUE, FALSE)
+  combined_merged <- combined_merged %>%
+    mutate(
+      Serotype = trimws(sub("(?i)serogroup\\s*", "", Serotype, perl = TRUE)),
+      Serotype = sub("^0+([0-9])", "\\1", Serotype),
+      Serogroup = sub("^([0-9]+).*", "\\1", Serotype),
+    )
+  
+  # determine with genogroup assignments
+  genogroups <- combined %>%
+    distinct(nn_serotype, nn_serogroup, nn_genogroup)
+  colnames(genogroups) <- c("Serotype", "Serogroup", "Genogroup")
+  
+  # merge genogroups
+  final_knn_df <- combined_merged %>%
+    left_join(
+      genogroups %>%
+        group_by(Serotype) %>%
+        slice(1) %>%
+        ungroup() %>%
+        select(Serotype, Genogroup),
+      by = "Serotype"
+    )
+  
+  write_csv(final_knn_df, file.path(data_root, "all_1_nn_results.csv"))
+  
+} else {
+  final_knn_df <- read_csv(file.path(data_root, "all_1_nn_results.csv"), show_col_types = FALSE)
+}
+
+# filter combined merged
+final_knn_df <- final_knn_df %>% filter(loo_serotype %in% allcaps_serotypes)
+
+# helper for calculating per serotype metrics
+match_serotype  <- function(vec, cls) !is.na(vec) & vec == cls
+compute_metrics <- function(final_knn_df) {
+  classes <- sort(unique(final_knn_df$loo_serotype))
+  map_dfr(classes, function(cls) {
+    
+    class_rows <- final_knn_df[match_serotype(final_knn_df$loo_serotype, cls),]
+    
+    TP <- sum(class_rows$is_held_out & class_rows$is_novel, na.rm = TRUE)
+    FP <- sum(!class_rows$is_held_out & class_rows$is_novel, na.rm = TRUE)
+    FN <- sum( class_rows$is_held_out & !class_rows$is_novel, na.rm = TRUE)
+    TN <- sum(!class_rows$is_held_out & !class_rows$is_novel, na.rm = TRUE)
+    Total <- TP + FN
+    
+    f1 <- F1_Score(y_true = class_rows$is_held_out, y_pred = class_rows$is_novel, positive = TRUE)
+    sensitivity <- Sensitivity(y_true = class_rows$is_held_out, y_pred = class_rows$is_novel, positive = TRUE)
+    specificity <- Specificity(y_true = class_rows$is_held_out, y_pred = class_rows$is_novel, positive = TRUE)
+    accuracy <- Accuracy(y_true = class_rows$is_held_out, y_pred = class_rows$is_novel)
+    precision <- Precision(y_true = class_rows$is_held_out, y_pred = class_rows$is_novel, positive = TRUE)
+    
+    row <- tibble(Serotype = as.character(cls), TP, FP, FN, TN, Total, sensitivity, specificity, precision, accuracy, f1)
+    row <- row %>% replace(is.na(.), 0.0)
+    row
+  })
+}
+
+knn_metrics <- compute_metrics(final_knn_df)
+
+write_csv(knn_metrics, file.path(data_root, "all_1_nn_metrics.csv"))
+
+
+
+
