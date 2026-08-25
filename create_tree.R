@@ -15,6 +15,7 @@ library(ggtreeExtra)
 library(ggnewscale)
 library(Polychrome)
 library(ggpubr)
+library(patchwork)
 
 # set to false if not generating new intermediate files
 WRITE_NEW_INTERMEDIATE <- FALSE
@@ -123,7 +124,7 @@ if (WRITE_NEW_INTERMEDIATE == TRUE) {
 
 # generate GPSC proportion data
 # minimum clade to plot
-min.GPSC.size <- 200
+min.GPSC.size <- 300
 
 proportion_data <- merged.df %>%
   group_by(GPSC, predicted_serogroup, final_serogroup_prediction) %>%
@@ -143,6 +144,9 @@ proportion_data$predicted_serogroup <- as.character(proportion_data$predicted_se
 
 # Define ordered serogroups and colours for plots
 serogroups <- as.character(sort(as.numeric(unique(as.character(proportion_data$predicted_serogroup)))))
+palette_seed <- 42
+
+set.seed(palette_seed)
 # Generate colours
 cols <- createPalette(
   length(serogroups),
@@ -157,7 +161,7 @@ top_proportion_data <- proportion_data %>%
   filter(final_serogroup_prediction != "Novel") %>%
   group_by(GPSC) %>%
   # Keeps the entire row where Proportion is highest for that GPSC
-  slice_max(order_by = Proportion, n = 1, with_ties = FALSE) %>%
+  #slice_max(order_by = Proportion, n = 1, with_ties = FALSE) %>%
   ungroup() 
 
 # Find GPSCs present in top_proportion_data but missing from top_proportion_data_novel
@@ -384,27 +388,62 @@ p.dist <- ggplot(plot_data, aes(x=GPSC, y=n, group=GPSC, fill = final_serogroup_
                     breaks = names(cols),
                     drop = FALSE) +
   theme_light() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8.5),
+        axis.title = element_text(size = 14)) +
   ylab("Total genomes") +
-  xlab("GPSC") 
+  xlab("GPSC") +
+  labs(fill = "Predicted Serogroup")
 p.dist
+
+p.observed <- p.observed +
+  theme(legend.position = "none")
+
+p.novel <- p.novel +
+  theme(legend.position = "none")
+
+p.observed <- p.observed +
+  theme(plot.margin = margin(5.5, 50, 5.5, 5.5))
+
+p.novel <- p.novel +
+  theme(plot.margin = margin(5.5, 5.5, 5.5, 50))
 
 combined_plot <- (
   (p.observed | p.novel) /
     p.dist
 ) +
   plot_layout(
-    heights = c(1, 1),
-    guides = "collect"
-  ) &
-  theme(
-    legend.position = "right"
+    heights = c(1, 1)
+  ) +
+  plot_annotation(
+    tag_levels = "A"
   )
+
 combined_plot
 ggsave(file.path(data_root, "plots", "ATB_tree_hist.pdf"), width = 15, height = 10, plot = combined_plot)
 ggsave(file.path(data_root, "plots", "ATB_tree_hist.png"), width = 15, height = 10, plot = combined_plot)
 
 # For distirbution of annotation proportions
+proportion_data <- merged.df %>%
+  group_by(GPSC, predicted_serogroup, final_serogroup_prediction) %>%
+  tally() %>%
+  group_by(GPSC) %>%
+  mutate(Proportion = n / sum(n)) %>%
+  filter(!is.na(GPSC), GPSC != "nan", final_serogroup_prediction != "Novel", final_serogroup_prediction != "Non-cps") %>%
+  ungroup() %>%
+  group_by(GPSC) %>%
+  mutate(GPSC_total = sum(n)) %>%
+  filter(GPSC_total > min.GPSC.size) %>%
+  ungroup() %>%
+  mutate(GPSC = forcats::fct_reorder(GPSC, GPSC_total, .desc = TRUE)) %>%
+  arrange(desc(GPSC_total), GPSC)
+
+top_proportion_data <- proportion_data %>%
+  filter(final_serogroup_prediction != "Novel") %>%
+  group_by(GPSC) %>%
+  # Keeps the entire row where Proportion is highest for that GPSC
+  slice_max(order_by = Proportion, n = 1, with_ties = FALSE) %>%
+  ungroup() 
+
 box_stats <- top_proportion_data %>%
   summarise(
     median = median(Proportion, na.rm = TRUE),
@@ -412,13 +451,13 @@ box_stats <- top_proportion_data %>%
     Q3 = quantile(Proportion, 0.75, na.rm = TRUE)
   )
 
-p.box100 <- ggplot(top_proportion_data, aes(y = Proportion)) +
+p.box.large <- ggplot(top_proportion_data, aes(y = Proportion)) +
   geom_boxplot() +
   geom_text(
     data = box_stats,
     aes(
       x = 0.25,
-      y = 0.5,
+      y = 0.25,
       label = paste0(
         "Q3: ", round(Q3, 2),
         "\nMedian: ", round(median, 2),
@@ -434,16 +473,16 @@ p.box100 <- ggplot(top_proportion_data, aes(y = Proportion)) +
   ylab("Majority Serotype Proportion") +
   xlab(NULL)
 
-p.box100
+p.box.large
 
 min.GPSC.size <- 1
 
 proportion_data <- merged.df %>%
-  group_by(GPSC, predicted_serogroup) %>%
+  group_by(GPSC, predicted_serogroup, final_serogroup_prediction) %>%
   tally() %>%
   group_by(GPSC) %>%
   mutate(Proportion = n / sum(n)) %>%
-  filter(!is.na(GPSC), final_serogroup_prediction != "Novel", final_serogroup_prediction != "Non-cps") %>%
+  filter(!is.na(GPSC), GPSC != "nan", final_serogroup_prediction != "Novel", final_serogroup_prediction != "Non-cps") %>%
   ungroup() %>%
   group_by(GPSC) %>%
   mutate(GPSC_total = sum(n)) %>%
@@ -472,7 +511,7 @@ p.box1 <- ggplot(top_proportion_data, aes(y = Proportion)) +
     data = box_stats,
     aes(
       x = 0.25,
-      y = 0.5,
+      y = 0.25,
       label = paste0(
         "Q3: ", round(Q3, 2),
         "\nMedian: ", round(median, 2),
@@ -491,7 +530,7 @@ p.box1 <- ggplot(top_proportion_data, aes(y = Proportion)) +
 p.box1
 
 combined_box <- ggarrange(
-  p.box100,
+  p.box.large,
   p.box1,
   labels = c("A", "B"),
   ncol = 2,
