@@ -9,13 +9,31 @@ library(stringr)
 library(ggsci)
 library(ggpubr)
 library(MLmetrics)
+library(pROC)
+library(purrr)
 
 data_root <- file.path(dirname(rstudioapi::getSourceEditorContext()$path), "data")
 metrics   <- read.csv(file.path(data_root, "knn-sweep", "k_sweep_per_fold.csv"))
-ground_truth <- read.csv(file.path(data_root, "GPS_benchmark", "ground_truth.csv"))
+#ground_truth <- read.csv(file.path(data_root, "GPS_benchmark", "ground_truth.csv"))
+
+# read in and rename columns of ground truth
+ground_truth <- read.csv(file.path(data_root, "merged_ground_truth.csv"))
+colnames(ground_truth) <- c("sample_id", "Serotype", "Serogroup", "dataset", "benchmark")
+
+# assign out put directories
 plot_dir <- file.path(data_root, "plots")
 dir.create(plot_dir, showWarnings = FALSE)
 create_merged_knn_file <- FALSE
+testing_only <- TRUE
+
+# only run analysis for testing genomes
+if (testing_only) {
+  ground_truth_test <- subset(ground_truth, dataset == "Testing" & benchmark == "GPS benchmark")
+}
+
+# set a chosen threshold for knn if available
+best_thresholds <- read.csv(file.path(data_root, "1_nn_best_thresholds.csv"))
+#best_thresholds <- NA
 
 allcaps_serotypes <- read.csv(
   file.path(dirname(rstudioapi::getSourceEditorContext()$path),
@@ -177,7 +195,6 @@ p.box
 ggsave(file.path(plot_dir, "k_vs_AUROC_boxplot.png"), plot=p.box, width = 9, height = 6)
 ggsave(file.path(plot_dir, "k_vs_AUROC_boxplot.pdf"), plot=p.box, width = 9, height = 6)
 
-# TODO combine all knn-raw data into single table, then determine assignment to model serogroups rather than serotypes
 # analyse closest nearest neighbour
 nn_metrics   <- read.csv(file.path(data_root, "knn-sweep", "knn_nn_summary.csv"))
 
@@ -276,13 +293,16 @@ if (create_merged_knn_file) {
   combined_training <- bind_rows(all_results)
   combined_training$is_held_out <- FALSE
   
+  # filter based on ground truth present in testing
+  if (testing_only) {
+    combined_training <- combined_training %>%
+      filter(sample_id %in% ground_truth_test$sample_id)
+  }
+  
   combined <- rbind(combined_query, combined_training)
   
-  ground_truth$Contig_ID <- as.character(ground_truth$Contig_ID)
-
   # merge with serotype information
-  combined_merged <- left_join(combined, ground_truth, by = c("sample_id", "Contig_ID"))
-  combined_merged$Is_capsule <- ifelse(combined_merged$Is_capsule == 1, TRUE, FALSE)
+  combined_merged <- left_join(combined, ground_truth, by = c("sample_id"))
   combined_merged <- combined_merged %>%
     mutate(
       Serotype = trimws(sub("(?i)serogroup\\s*", "", Serotype, perl = TRUE)),
@@ -306,6 +326,23 @@ if (create_merged_knn_file) {
       by = "Serotype"
     )
   
+  # reset is novel based on nn_serotype distances
+  if (is.data.frame(best_thresholds)) {
+    final_knn_df <- final_knn_df %>%
+      left_join(
+        best_thresholds %>%
+          select(nn_serotype, threshold),
+        by = "nn_serotype"
+      ) %>%
+      mutate(
+        is_novel = if_else(
+          is.na(threshold),
+          FALSE,
+          nn_distance > threshold
+        )
+      )
+  }
+  
   write_csv(final_knn_df, file.path(data_root, "all_1_nn_results.csv"))
   
 } else {
@@ -314,9 +351,6 @@ if (create_merged_knn_file) {
 
 # filter combined merged
 final_knn_df <- final_knn_df %>% filter(loo_serotype %in% allcaps_serotypes)
-
-# run a ROC analysis using distances per serotype
-
 
 # helper for calculating per serotype metrics
 match_serotype  <- function(vec, cls) !is.na(vec) & vec == cls
@@ -455,3 +489,78 @@ p.distance
 
 ggsave(file.path(plot_dir, "knn_distance_quartiles.png"), plot=p.distance, width = 9, height = 11)
 ggsave(file.path(plot_dir, "knn_distance_quartiles.pdf"), plot=p.distance, width = 9, height = 11)
+
+# generate ROC curves per serotype
+roc_results <- final_knn_df %>%
+  group_by(nn_serotype) %>%
+  filter(
+    n_distinct(is_held_out) == 2,
+    !is.na(nn_distance)
+  ) %>%
+  nest() %>%
+  mutate(
+    roc = map(
+      data,
+      ~ roc(
+        response = .x$is_held_out,
+        predictor = .x$nn_distance,
+        levels = c(FALSE, TRUE),
+        direction = "<",
+        quiet = TRUE
+      )
+    ),
+    auc = map_dbl(roc, auc)
+  )
+
+# pick best threshold per serotype
+best_thresholds <- roc_results %>%
+  mutate(
+    best = purrr::map(
+      roc,
+      ~ pROC::coords(
+        .x,
+        x = "best",
+        best.method = "youden",
+        ret = c("threshold", "sensitivity", "specificity"),
+        transpose = FALSE
+      )
+    )
+  ) %>%
+  select(nn_serotype, auc, best) %>%
+  tidyr::unnest(best)
+
+write_csv(best_thresholds, file.path(data_root, "1_nn_best_thresholds.csv"))
+
+# generate ROC curves for all
+roc_result_all <- final_knn_df %>%
+  nest() %>%
+  mutate(
+    roc = map(
+      data,
+      ~ roc(
+        response = .x$is_held_out,
+        predictor = .x$nn_distance,
+        levels = c(FALSE, TRUE),
+        direction = "<",
+        quiet = TRUE
+      )
+    ),
+    auc = map_dbl(roc, auc)
+  )
+
+# pick best threshold for all
+best_threshold_all <- roc_result_all %>%
+  mutate(
+    best = purrr::map(
+      roc,
+      ~ pROC::coords(
+        .x,
+        x = "best",
+        best.method = "youden",
+        ret = c("threshold", "sensitivity", "specificity"),
+        transpose = FALSE
+      )
+    )
+  ) %>%
+  select(auc, best) %>%
+  tidyr::unnest(best)

@@ -43,7 +43,7 @@ process_benchmark_dir <- function(dir_path) {
     select(sample_id, predicted_serotype = pred_argmax, is_cbl = is_cbl, is_novel_energy = is_novel_energy) %>%
     mutate(tool = "ALLCAPS")
   
-  ground_truth$dataset <- ifelse(ground_truth$sample_id %in% pred_df$sample_id, "Testing", "Training")  
+  ground_truth$dataset <- ifelse(ground_truth$sample_id %in% pred_df$sample_id, "Testing", "Training")
   
   ground_truth$benchmark <- str_replace(basename(dir_path), "_", " ")
   ground_truth
