@@ -259,7 +259,7 @@ process_knn_raw <- function(file) {
     )
   
   df <- df |>
-    select(sample_id, Contig_ID, loo_serotype, loo_serogroup, knn_distance, nn_distance, nn_serotype, nn_serogroup, nn_genogroup, is_novel)
+    select(sample_id, Contig_ID, loo_serotype, loo_serogroup, nn_distance, nn_serotype, nn_serogroup, nn_genogroup, is_novel)
   
   df
 }
@@ -315,6 +315,9 @@ if (create_merged_knn_file) {
 # filter combined merged
 final_knn_df <- final_knn_df %>% filter(loo_serotype %in% allcaps_serotypes)
 
+# run a ROC analysis using distances per serotype
+
+
 # helper for calculating per serotype metrics
 match_serotype  <- function(vec, cls) !is.na(vec) & vec == cls
 compute_metrics <- function(final_knn_df) {
@@ -341,10 +344,114 @@ compute_metrics <- function(final_knn_df) {
   })
 }
 
-knn_metrics <- compute_metrics(final_knn_df)
+compute_distances <- function(final_knn_df) {
+  classes <- sort(unique(final_knn_df$loo_serotype))
+  map_dfr(classes, function(cls) {
+    
+    class_rows <- final_knn_df[match_serotype(final_knn_df$loo_serotype, cls),]
+    distances_TP <- class_rows[class_rows$is_held_out & class_rows$is_novel,]
+    distances_FP <- class_rows[!class_rows$is_held_out & class_rows$is_novel,]
+    distances_FN <- class_rows[class_rows$is_held_out & !class_rows$is_novel,]
+    distances_TN <- class_rows[!class_rows$is_held_out & !class_rows$is_novel,]
+    
+    distances_held_out <- class_rows[class_rows$is_held_out,]
+    distances_training <- class_rows[!class_rows$is_held_out,]
+    
+    median_distances_TP <-  median(distances_TP$nn_distance)
+    median_distances_FP <-  median(distances_FP$nn_distance)
+    median_distances_FN <-  median(distances_FN$nn_distance)
+    median_distances_TN <-  median(distances_TN$nn_distance)
+    
+    quantiles_distances_held_out <- quantile(distances_held_out$nn_distance, c(0.25, 0.5, 0.75))
+    quantiles_distances_training <- quantile(distances_training$nn_distance, c(0.25, 0.5, 0.75))
+    
+    row <- tibble(Serotype = as.character(cls), median_distances_TP, median_distances_FP, median_distances_FN, median_distances_TN, 
+                  LQ_distances_held_out = quantiles_distances_held_out[1], median_distances_held_out = quantiles_distances_held_out[2], UQ_distances_held_out = quantiles_distances_held_out[3],
+                  LQ_distances_training = quantiles_distances_training[1], median_distances_training = quantiles_distances_training[2], UQ_distances_training = quantiles_distances_training[3])
+    row <- row %>% replace(is.na(.), 0.0)
+    row
+  })
+}
 
+knn_metrics <- compute_metrics(final_knn_df)
 write_csv(knn_metrics, file.path(data_root, "all_1_nn_metrics.csv"))
 
+knn_distances <- compute_distances(final_knn_df)
 
+plot_data <- knn_distances %>%
+  select(Serotype,
+        LQ_distances_held_out,
+        median_distances_held_out,
+        UQ_distances_held_out,
+        LQ_distances_training,
+        median_distances_training,
+        UQ_distances_training) %>%
+  pivot_longer(
+    cols = c(
+      LQ_distances_held_out,
+      median_distances_held_out,
+      UQ_distances_held_out,
+      LQ_distances_training,
+      median_distances_training,
+      UQ_distances_training
+    ),
+    names_to = c("statistic", "group"),
+    names_pattern = "^(LQ|median|UQ)_distances_(held_out|training)$"
+  ) %>%
+  pivot_wider(
+    names_from = statistic,
+    values_from = value
+  ) %>%
+  rename(
+    ymin = LQ,
+    middle = median,
+    ymax = UQ
+  )
 
+plot_data$group[plot_data$group == "held_out"] <- "Novel"
+plot_data$group[plot_data$group == "training"] <- "Training"
 
+plot_data <- plot_data %>%
+  mutate(
+    serotype_number = as.numeric(sub("^([0-9]+).*", "\\1", Serotype)),
+    serotype_suffix = sub("^[0-9]+", "", Serotype)
+  ) %>%
+  arrange(serotype_number, serotype_suffix) %>%
+  mutate(
+    Serotype = factor(Serotype, levels = unique(Serotype))
+  ) %>%
+  select(-serotype_number, -serotype_suffix)
+
+# generate distance plots showing distances between NNs for held-out and known serotypes
+p.distance <- ggplot(
+  plot_data,
+  aes(
+    x = Serotype,
+    y = middle,
+    ymin = ymin,
+    ymax = ymax,
+    group = group
+  )
+) +
+  geom_errorbar(
+    aes(color = group),
+    position = position_dodge(width = 0.5),
+    width = 0.15
+  ) +
+  geom_point(
+    aes(color = group),
+    position = position_dodge(width = 0.5),
+    size = 2
+  ) +
+  coord_flip() +
+  labs(
+    x = "Serotype",
+    y = "Distance",
+    color = "Sample Type"
+  ) +
+  theme_light() +
+  scale_color_npg()
+p.distance
+
+ggsave(file.path(plot_dir, "knn_distance_quartiles.png"), plot=p.distance, width = 9, height = 11)
+ggsave(file.path(plot_dir, "knn_distance_quartiles.pdf"), plot=p.distance, width = 9, height = 11)
