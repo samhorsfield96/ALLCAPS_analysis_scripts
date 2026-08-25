@@ -35,7 +35,8 @@ metrics <- metrics %>%
 
 # Define ordered serogroups
 serogroups <- sort(as.numeric(unique(as.character(metrics$serogroup))))
-
+palette_seed <- 42
+set.seed(palette_seed)
 # Generate colours
 cols <- createPalette(
   length(serogroups),
