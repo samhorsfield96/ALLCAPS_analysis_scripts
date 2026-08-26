@@ -1,4 +1,4 @@
-,serotype,serotype_confidence,pred_argmax
+sample_id,serotype,serotype_confidence,pred_argmax
 SRR26910902#9,11D,0.298,9L
 SRR26910902#16,11D,0.341,11D
 SRR26790191#4,11D,0.322,11E

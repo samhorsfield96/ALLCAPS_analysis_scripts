@@ -1,4 +1,4 @@
-,is_cbl,is_novel_serogroup,is_novel_energy,is_novel_openmax,serotype_confidence,novelty_confidence,openmax_pred,openmax_prob_unknown,pred_genogroup,pred_argmax
+sample_id,is_cbl,is_novel_serogroup,is_novel_energy,is_novel_openmax,serotype_confidence,novelty_confidence,openmax_pred,openmax_prob_unknown,pred_genogroup,pred_argmax
 SRR26931333#8,True,False,False,False,1.0,-13.043,8,0.001777,32,8
 SRR26931333#15,True,False,False,False,1.0,-12.95,8,0.001436,32,8
 ERR2681127#2,True,False,False,False,0.799,-9.542,15C,0.005668,19F,15C
