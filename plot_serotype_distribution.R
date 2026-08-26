@@ -3,6 +3,7 @@ library(readr)
 library(tidyr)
 library(ggplot2)
 library(forcats)
+library(stringr)
 
 # ── ALLCAPS-typeable serotypes ────────────────────────────────────────────────
 allcaps_serotypes <- read_csv(
