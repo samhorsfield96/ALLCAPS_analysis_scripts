@@ -88,6 +88,8 @@ for (ana in unique(combos$analysis)) {
   ana_lbl  <- gsub("[^A-Za-z0-9]", "_", ana)
   out_file <- file.path(plot_dir, paste0("boxplot_", ana_lbl, ".pdf"))
   ggsave(out_file, combined_plot, width = 14, height = 10 * length(plots))
+  out_file <- file.path(plot_dir, paste0("boxplot_", ana_lbl, ".png"))
+  ggsave(out_file, combined_plot, width = 14, height = 10 * length(plots))
   message("Saved: ", out_file)
 }
 

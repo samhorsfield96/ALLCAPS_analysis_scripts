@@ -7,18 +7,13 @@ library(purrr)
 # point to data files
 data_root <- file.path(dirname(rstudioapi::getSourceEditorContext()$path), "data")
 
-# ── ALLCAPS-typeable serotypes ─────────────────────────────────────────────────
-allcaps_serotypes <- read_csv(
-  file.path(data_root, "ALLCAPS_possible_serotypes.csv"),
-  show_col_types = FALSE
-)$Serotypes
-
 # ── Load data ──────────────────────────────────────────────────────────────────
 wide <- read_csv(file.path(data_root, "merged_benchmark_results_wide.csv"),
                  show_col_types = FALSE) %>%
   mutate(true_serogroup = as.character(true_serogroup)) %>%
   # remove ambiguous true serotype calls
-  filter(true_serotype %in% allcaps_serotypes)
+  #filter(true_serotype %in% allcaps_serotypes)
+  filter(!is.na(true_serotype), !str_detect(true_serogroup, ";"))
 
 tools <- setdiff(names(wide), c("sample_id", "benchmark", "true_serotype", "true_serogroup"))
 
