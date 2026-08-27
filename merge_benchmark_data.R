@@ -2,13 +2,6 @@ library(dplyr)
 library(readr)
 library(tidyr)
 
-# ── ALLCAPS-typeable serotypes ────────────────────────────────────────────────
-allcaps_serotypes <- read_csv(
-  file.path(dirname(rstudioapi::getSourceEditorContext()$path),
-            "data", "ALLCAPS_possible_serotypes.csv"),
-  show_col_types = FALSE
-)$Serotypes
-
 # Process a single benchmark directory and return a merged data frame
 process_benchmark_dir <- function(dir_path) {
   message("Processing: ", dir_path)

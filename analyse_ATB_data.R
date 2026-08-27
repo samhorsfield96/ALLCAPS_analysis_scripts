@@ -21,7 +21,7 @@ library(patchwork)
 WRITE_NEW_INTERMEDIATE <- FALSE
 
 data_root <- file.path(dirname(rstudioapi::getSourceEditorContext()$path), "data")
-sample.file <- file.path(data_root, "ATB_query_results.csv")
+sample.file <- file.path(data_root, "ATB_query_results_knn.csv")
 
 generate_tree <- function(tree, dataframe){
   # remove tips with no data

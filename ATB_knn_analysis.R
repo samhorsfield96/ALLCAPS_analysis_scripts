@@ -39,7 +39,11 @@ knn.df <- read_csv(knn.file, show_col_types = FALSE) %>%
     nn_distance,
     nn_serotype,
     nn_genogroup
-  ) 
+  ) %>%
+  mutate(
+    nn_serogroup = sub("^([0-9]+).*", "\\1", nn_serotype)
+  )
+
 combined.df <- inner_join(sample.df, knn.df, by = c("sample_id", "Contig_ID"))
 
 # read in best thresholds
