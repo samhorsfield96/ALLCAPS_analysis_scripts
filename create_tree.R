@@ -131,7 +131,7 @@ proportion_data <- merged.df %>%
   tally() %>%
   group_by(GPSC) %>%
   mutate(Proportion = n / sum(n)) %>%
-  filter(!is.na(GPSC), GPSC != "nan", final_serogroup_prediction != "Non-cps") %>%
+  filter(!is.na(GPSC),  GPSC != "nan", !str_detect(GPSC, ";"), final_serogroup_prediction != "Non-cps") %>%
   ungroup() %>%
   group_by(GPSC) %>%
   mutate(GPSC_total = sum(n)) %>%
@@ -428,7 +428,7 @@ proportion_data <- merged.df %>%
   tally() %>%
   group_by(GPSC) %>%
   mutate(Proportion = n / sum(n)) %>%
-  filter(!is.na(GPSC), GPSC != "nan", final_serogroup_prediction != "Novel", final_serogroup_prediction != "Non-cps") %>%
+  filter(!is.na(GPSC), GPSC != "nan", !str_detect(GPSC, ";"), final_serogroup_prediction != "Novel", final_serogroup_prediction != "Non-cps") %>%
   ungroup() %>%
   group_by(GPSC) %>%
   mutate(GPSC_total = sum(n)) %>%
@@ -482,7 +482,7 @@ proportion_data <- merged.df %>%
   tally() %>%
   group_by(GPSC) %>%
   mutate(Proportion = n / sum(n)) %>%
-  filter(!is.na(GPSC), GPSC != "nan", final_serogroup_prediction != "Novel", final_serogroup_prediction != "Non-cps") %>%
+  filter(!is.na(GPSC), GPSC != "nan", !str_detect(GPSC, ";"), final_serogroup_prediction != "Novel", final_serogroup_prediction != "Non-cps") %>%
   ungroup() %>%
   group_by(GPSC) %>%
   mutate(GPSC_total = sum(n)) %>%
