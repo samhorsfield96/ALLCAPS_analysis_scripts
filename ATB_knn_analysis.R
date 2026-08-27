@@ -6,8 +6,6 @@ library(tidyr)
 library(readr)
 library(ggplot2)
 
-
-
 data_root <- file.path(dirname(rstudioapi::getSourceEditorContext()$path), "data")
 knn.file <- file.path(data_root, "ATB_knn_query_distances.csv")
 sample.file <- file.path(data_root, "ATB_query_results.csv")
@@ -21,6 +19,7 @@ sample.df <- read_csv(sample.file, show_col_types = FALSE) %>%
     sample_id,
     Contig_ID,
     predicted_serotype = pred_argmax,
+    serotype_confidence,
     is_cbl,
     is_novel_serogroup,
     is_novel_energy
@@ -63,5 +62,7 @@ combined.df <- combined.df %>%
       nn_distance > threshold
     )
   )
+
+combined.df$matching_nn_pred <- combined.df$predicted_serotype == combined.df$predicted_serotype
 
 write_csv(combined.df, file.path(data_root, "ATB_query_results_knn.csv"))

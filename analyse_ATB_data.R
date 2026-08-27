@@ -7,9 +7,9 @@ library(readr)
 library(ggplot2)
 if (!require("BiocManager", quietly = TRUE)) {
   install.packages("BiocManager")
+  BiocManager::install("ggtree", ask = FALSE)
+  BiocManager::install("ggtreeExtra", ask = FALSE)
 }
-BiocManager::install("ggtree", ask = FALSE)
-BiocManager::install("ggtreeExtra", ask = FALSE)
 library(ggtree)
 library(ggtreeExtra)
 library(ggnewscale)
@@ -67,16 +67,21 @@ if (WRITE_NEW_INTERMEDIATE == TRUE) {
     ungroup() %>%
     select(
       sample_id,
-      predicted_serotype = pred_argmax,
+      predicted_serotype,
+      predicted_serogroup,
       is_cbl,
       is_novel_serogroup,
-      is_novel_energy
+      is_novel_energy,
+      nn_serotype,
+      nn_serogroup,
+      nn_genogroup,
+      nn_distance
     ) %>%
     mutate(
       tool = "ALLCAPS",
-      predicted_serogroup = sub("^([0-9]+).*", "\\1", predicted_serotype)
     )
-  colnames(sample.df) <- c("tip", "predicted_serotype", "is_cbl", "is_novel_serogroup", "is_novel_energy", "tool", "predicted_serogroup")
+  colnames(sample.df) <- c("tip", "predicted_serotype", "predicted_serogroup", "is_cbl", "is_novel_serogroup", "is_novel_energy", "nn_serotype",
+                           "nn_serogroup", "nn_genogroup", "nn_distance", "tool")
 
   
   #only run if downsampling tree
@@ -127,7 +132,7 @@ if (WRITE_NEW_INTERMEDIATE == TRUE) {
 min.GPSC.size <- 300
 
 proportion_data <- merged.df %>%
-  group_by(GPSC, predicted_serogroup, final_serogroup_prediction) %>%
+  group_by(GPSC, predicted_serogroup, nn_serogroup, final_serogroup_prediction) %>%
   tally() %>%
   group_by(GPSC) %>%
   mutate(Proportion = n / sum(n)) %>%
@@ -182,10 +187,14 @@ top_proportion_data <- bind_rows(
   placeholder_rows
 )
 
+# generate same data for novel genomes, but sample by nn_serogroup this time
 top_proportion_data_novel <- proportion_data %>%
   filter(final_serogroup_prediction == "Novel") %>%
   group_by(GPSC) %>%
+  # Keeps the entire row where Proportion is highest for that GPSC
+  #slice_max(order_by = Proportion, n = 1, with_ties = FALSE) %>%
   ungroup() 
+
 
 # Find GPSCs present in top_proportion_data but missing from top_proportion_data_novel
 missing_GPSC <- proportion_data %>%
@@ -229,13 +238,6 @@ plot_data <- top_proportion_data %>%
   rename(label = GPSC)
 write.csv(plot_data, file.path(data_root, "per_GPSC_data_observed.csv"), row.names = FALSE, quote = FALSE)
 #add empty rows to enable correct colour plotting
-plot_data <- plot_data %>%
-  tidyr::complete(
-    label,
-    final_serogroup_prediction = names(cols),
-    predicted_serogroup = names(cols),
-    fill = list(n = 0)
-  )
 
 # Plot tree for known serotypes
 p.observed <- ggtree(
@@ -292,23 +294,14 @@ p.observed <- p.observed +
   ) + labs(fill = "Predicted Serogroup")
 
 p.observed
-ggsave(file.path(data_root, "plots", "ATB_tree_plot.pdf"), width = 14, height = 10, plot = p.observed)
+ggsave(file.path(data_root, "plots", "ATB_tree_plot_observed.pdf"), width = 14, height = 10, plot = p.observed)
 
 # generate same tree for novel genomes
 plot_data <- top_proportion_data_novel %>%
   rename(label = GPSC)
 write.csv(plot_data, file.path(data_root, "per_GPSC_data_novel.csv"), row.names = FALSE, quote = FALSE)
-#add empty rows to enable correct colour plotting
-plot_data <- plot_data %>%
-  tidyr::complete(
-    label,
-    final_serogroup_prediction = names(cols),
-    predicted_serogroup = names(cols),
-    fill = list(n = 0)
-  )
 
 # --- 2. THE LINEAR FACET PLOT (TDbook Architecture) ---
-
 p.novel <- ggtree(
   collapsed_tree,
   layout = "circular",
@@ -329,7 +322,7 @@ p.novel <- p.novel +
     mapping = aes(
       y = label,
       x = Proportion,
-      fill = predicted_serogroup
+      fill = nn_serogroup
     ),
     orientation = "y",
     pwidth = 0.18,
@@ -424,11 +417,11 @@ ggsave(file.path(data_root, "plots", "ATB_tree_hist.png"), width = 15, height = 
 
 # For distirbution of annotation proportions
 proportion_data <- merged.df %>%
-  group_by(GPSC, predicted_serogroup, final_serogroup_prediction) %>%
+  group_by(GPSC, predicted_serotype, predicted_serogroup, final_serogroup_prediction) %>%
   tally() %>%
   group_by(GPSC) %>%
   mutate(Proportion = n / sum(n)) %>%
-  filter(!is.na(GPSC), GPSC != "nan", !str_detect(GPSC, ";"), final_serogroup_prediction != "Novel", final_serogroup_prediction != "Non-cps") %>%
+  filter(!is.na(GPSC), GPSC != "nan", final_serogroup_prediction != "Novel", final_serogroup_prediction != "Non-cps") %>%
   ungroup() %>%
   group_by(GPSC) %>%
   mutate(GPSC_total = sum(n)) %>%
@@ -470,6 +463,7 @@ p.box.large <- ggplot(top_proportion_data, aes(y = Proportion)) +
     axis.text.x = element_blank(),
     axis.ticks.x = element_blank()
   ) +
+  scale_y_continuous(limits = c(0,1)) +
   ylab("Majority Serotype Proportion") +
   xlab(NULL)
 
@@ -478,7 +472,7 @@ p.box.large
 min.GPSC.size <- 1
 
 proportion_data <- merged.df %>%
-  group_by(GPSC, predicted_serogroup, final_serogroup_prediction) %>%
+  group_by(GPSC, predicted_serotype, predicted_serogroup, final_serogroup_prediction) %>%
   tally() %>%
   group_by(GPSC) %>%
   mutate(Proportion = n / sum(n)) %>%
@@ -524,6 +518,7 @@ p.box1 <- ggplot(top_proportion_data, aes(y = Proportion)) +
     axis.text.x = element_blank(),
     axis.ticks.x = element_blank()
   ) +
+  scale_y_continuous(limits = c(0,1)) +
   ylab("Majority Serotype Proportion") +
   xlab(NULL)
 
@@ -544,7 +539,7 @@ ggsave(file.path(data_root, "plots", "ATB_GPSC_Serotype_proportions.png"), width
 # number of difference serotypes within each GPSC
 within_GPSC_difference <- proportion_data %>%
   group_by(GPSC) %>%
-  summarise(n_classes = n_distinct(predicted_serogroup))
+  summarise(n_classes = n_distinct(predicted_serotype))
 
 box_stats <- within_GPSC_difference %>%
   summarise(
