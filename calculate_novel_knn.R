@@ -15,192 +15,11 @@ data_root <- file.path(dirname(rstudioapi::getSourceEditorContext()$path), "data
 ground_truth <- read.csv(file.path(data_root, "merged_ground_truth.csv"))
 colnames(ground_truth) <- c("sample_id", "Serotype", "Serogroup", "dataset", "benchmark")
 
-# sample serotypes predicted by ALLCAPS
-allcaps_serotypes <- read.csv(
-  file.path(dirname(rstudioapi::getSourceEditorContext()$path),
-            "data", "ALLCAPS_possible_serotypes.csv")
-)$Serotypes
-
 # assign out put directories
 plot_dir <- file.path(data_root, "plots")
 dir.create(plot_dir, showWarnings = FALSE)
-create_merged_knn_file <- FALSE
 
-#create file containing all knns
-process_knn_raw <- function(file) {
-  df <- read_csv(file, show_col_types = FALSE)
-  
-  file_str_list <- strsplit(file, "/")[[1]]
-  loo_serotype <- file_str_list[length(file_str_list) - 1]
-  
-  sample_id_new <- str_split_fixed(df$sample_id, "#", 2)
-  df$sample_id <- sample_id_new[,1]
-  df$Contig_ID <- sample_id_new[,2]
-  
-  df$Contig_ID <- as.character(df$Contig_ID)
-  df$nn_genogroup <- as.character(df$nn_genogroup)
-  
-  df$loo_serotype <- loo_serotype
-  df$nn_serotype <- as.character(df$nn_serotype)
-  
-  df <- df %>%
-    mutate(
-      loo_serotype = trimws(sub("(?i)serogroup\\s*", "", loo_serotype, perl = TRUE)),
-      loo_serotype = sub("^0+([0-9])", "\\1", loo_serotype),
-      loo_serogroup = sub("^([0-9]+).*", "\\1", loo_serotype),
-      nn_serotype = trimws(sub("(?i)serogroup\\s*", "", nn_serotype, perl = TRUE)),
-      nn_serotype =sub("^0+([0-9])", "\\1", nn_serotype),
-      nn_serogroup = sub("^([0-9]+).*", "\\1", nn_serotype),
-      nn_genogroup = trimws(sub("(?i)serogroup\\s*", "", nn_genogroup, perl = TRUE))
-    )
-  
-  df <- df |>
-    select(sample_id, Contig_ID, loo_serotype, loo_serogroup, nn_distance, nn_serotype, nn_serogroup, nn_genogroup, is_novel)
-  
-  df
-}
-
-# create merged file of knn distances at K=1
-files <- list.files(file.path(data_root, "knn-sweep", "knn_raw"), pattern = "knn_query_distances.csv", recursive = TRUE, full.names = TRUE)
-all_results <- lapply(files, process_knn_raw)
-combined_query <- bind_rows(all_results)
-combined_query$is_held_out <- TRUE
-
-files <- list.files(file.path(data_root, "knn-sweep", "knn_raw"), pattern = "knn_id_distances.csv", recursive = TRUE, full.names = TRUE)
-all_results <- lapply(files, process_knn_raw)
-combined_training <- bind_rows(all_results)
-combined_training$is_held_out <- FALSE
-
-combined <- rbind(combined_query, combined_training)
-
-# merge with serotype information
-combined_merged <- left_join(combined, ground_truth, by = c("sample_id"))
-combined_merged <- combined_merged %>%
-  mutate(
-    Serotype = trimws(sub("(?i)serogroup\\s*", "", Serotype, perl = TRUE)),
-    Serotype = sub("^0+([0-9])", "\\1", Serotype),
-    Serogroup = sub("^([0-9]+).*", "\\1", Serotype),
-  )
-
-# determine with genogroup assignments
-genogroups <- combined %>%
-  distinct(nn_serotype, nn_serogroup, nn_genogroup)
-colnames(genogroups) <- c("Serotype", "Serogroup", "Genogroup")
-
-# merge genogroups
-final_knn_df <- combined_merged %>%
-  left_join(
-    genogroups %>%
-      group_by(Serotype) %>%
-      slice(1) %>%
-      ungroup() %>%
-      select(Serotype, Genogroup),
-    by = "Serotype"
-  )
-
-# reset is novel based distances
-final_knn_df <- final_knn_df %>%
-  select(-is_novel)
-
-# filter combined merged
-final_knn_df <- final_knn_df %>% filter(loo_serotype %in% allcaps_serotypes)
-
-# generate ROC curves per serotype
-roc_results <- final_knn_df %>%
-  group_by(nn_serotype) %>%
-  filter(
-    n_distinct(is_held_out) == 2,
-    !is.na(nn_distance)
-  ) %>%
-  nest() %>%
-  mutate(
-    roc = map(
-      data,
-      ~ roc(
-        response = .x$is_held_out,
-        predictor = .x$nn_distance,
-        levels = c(FALSE, TRUE),
-        direction = "<",
-        quiet = TRUE
-      )
-    ),
-    auc = map_dbl(roc, auc)
-  )
-
-# pick best threshold per serotype
-best_thresholds <- roc_results %>%
-  mutate(
-    best = purrr::map(
-      roc,
-      ~ pROC::coords(
-        .x,
-        x = "best",
-        best.method = "youden",
-        ret = c("threshold", "sensitivity", "specificity"),
-        transpose = FALSE
-      )
-    )
-  ) %>%
-  select(nn_serotype, auc, best) %>%
-  tidyr::unnest(best)
-
-write_csv(best_thresholds, file.path(data_root, "1_nn_best_thresholds_per_serotype.csv"))
-
-# generate ROC curves for all
-roc_result_all <- final_knn_df %>%
-  nest() %>%
-  mutate(
-    roc = map(
-      data,
-      ~ roc(
-        response = .x$is_held_out,
-        predictor = .x$nn_distance,
-        levels = c(FALSE, TRUE),
-        direction = "<",
-        quiet = TRUE
-      )
-    ),
-    auc = map_dbl(roc, auc)
-  )
-
-# pick best threshold for all
-best_threshold_all <- roc_result_all %>%
-  mutate(
-    best = purrr::map(
-      roc,
-      ~ pROC::coords(
-        .x,
-        x = "best",
-        best.method = "youden",
-        ret = c("threshold", "sensitivity", "specificity"),
-        transpose = FALSE
-      )
-    )
-  ) %>%
-  select(auc, best) %>%
-  tidyr::unnest(best)
-
-write_csv(best_thresholds, file.path(data_root, "1_nn_best_thresholds_all.csv"))
-
-# classify each serotype based on ROC
-final_knn_df <- final_knn_df %>%
-  left_join(
-    best_thresholds %>%
-      select(nn_serotype, threshold),
-    by = "nn_serotype"
-  ) %>%
-  mutate(
-    is_novel_threshold_per_serotype = if_else(
-      is.na(threshold),
-      FALSE,
-      nn_distance > threshold
-    )
-  )
-
-# repeat using the cut-off for all
-final_knn_df$is_novel_threshold_all <- ifelse(final_knn_df$nn_distance > best_threshold_all$threshold, TRUE, FALSE)
-
-write_csv(final_knn_df, file.path(data_root, "all_1_nn_results.csv"))
+files <- list.files(file.path(data_root), pattern = "k*_knn_data.csv", recursive = TRUE, full.names = TRUE)
 
 # calculating per serotype novel classification accuracy
 match_serotype  <- function(vec, cls) !is.na(vec) & vec == cls
@@ -248,13 +67,13 @@ compute_distances <- function(final_knn_df, pred_col_name) {
     distances_held_out <- class_rows[true_col,]
     distances_training <- class_rows[!true_col,]
     
-    quantiles_distances_TP <-  quantile(distances_TP$nn_distance, c(0.25, 0.5, 0.75))
-    quantiles_distances_FP <-  quantile(distances_FP$nn_distance, c(0.25, 0.5, 0.75))
-    quantiles_distances_FN <-  quantile(distances_FN$nn_distance, c(0.25, 0.5, 0.75))
-    quantiles_distances_TN <-  quantile(distances_TN$nn_distance, c(0.25, 0.5, 0.75))
+    quantiles_distances_TP <-  quantile(distances_TP$knn_distance, c(0.25, 0.5, 0.75))
+    quantiles_distances_FP <-  quantile(distances_FP$knn_distance, c(0.25, 0.5, 0.75))
+    quantiles_distances_FN <-  quantile(distances_FN$knn_distance, c(0.25, 0.5, 0.75))
+    quantiles_distances_TN <-  quantile(distances_TN$knn_distance, c(0.25, 0.5, 0.75))
     
-    quantiles_distances_held_out <- quantile(distances_held_out$nn_distance, c(0.25, 0.5, 0.75))
-    quantiles_distances_training <- quantile(distances_training$nn_distance, c(0.25, 0.5, 0.75))
+    quantiles_distances_held_out <- quantile(distances_held_out$knn_distance, c(0.25, 0.5, 0.75))
+    quantiles_distances_training <- quantile(distances_training$knn_distance, c(0.25, 0.5, 0.75))
     
     row <- tibble(Serotype = as.character(cls),  
                   LQ_distances_TP = quantiles_distances_TP[1], median_distances_TP = quantiles_distances_TP[2], UQ_distances_TP = quantiles_distances_TP[3],
@@ -268,19 +87,184 @@ compute_distances <- function(final_knn_df, pred_col_name) {
   })
 }
 
-# determine classification accuracy
-f1_beta <- 4
-knn_metrics_per_serotype <- compute_metrics(final_knn_df, "is_novel_threshold_per_serotype", f1_beta)
-knn_metrics_all <- compute_metrics(final_knn_df, "is_novel_threshold_all", f1_beta)
-write_csv(knn_metrics_per_serotype, file.path(data_root, "all_1_nn_metrics_threshold_per_serotype.csv"))
-write_csv(knn_metrics_all, file.path(data_root, "all_1_nn_metrics_threshold_all.csv"))
+set.seed(42)
+
+for (file in files) {
+  final_knn_df <- read_csv(file, show_col_types = FALSE)
+  
+  k_val <- unique(final_knn_df$k)
+  
+  final_knn_df <- final_knn_df %>%
+    mutate(.row_id = row_number())
+  
+  # split train and test data and check
+  train <- final_knn_df %>%
+    group_by(Serotype, is_held_out) %>%
+    slice_sample(prop = 0.9) %>%
+    ungroup()
+  
+  test <- final_knn_df %>%
+    anti_join(train %>% select(.row_id), by = ".row_id")
+  
+  train %>%
+    count(Serotype, is_held_out) %>%
+    group_by(Serotype) %>%
+    mutate(prop = n / sum(n))
+  
+  test %>%
+    count(Serotype, is_held_out) %>%
+    group_by(Serotype) %>%
+    mutate(prop = n / sum(n))
+  
+  # generate ROC curves per serotype
+  roc_results <- train %>%
+    group_by(nn_serotype) %>%
+    filter(
+      n_distinct(is_held_out) == 2,
+      !is.na(knn_distance)
+    ) %>%
+    nest() %>%
+    mutate(
+      roc = map(
+        data,
+        ~ roc(
+          response = .x$is_held_out,
+          predictor = .x$knn_distance,
+          levels = c(FALSE, TRUE),
+          direction = "<",
+          quiet = TRUE
+        )
+      ),
+      auc = map_dbl(roc, auc)
+    )
+  
+  # pick best threshold per serotype
+  best_thresholds <- roc_results %>%
+    mutate(
+      best = purrr::map(
+        roc,
+        ~ pROC::coords(
+          .x,
+          x = "best",
+          best.method = "youden",
+          ret = c("threshold", "sensitivity", "specificity"),
+          transpose = FALSE
+        )
+      )
+    ) %>%
+    select(nn_serotype, auc, best) %>%
+    tidyr::unnest(best)
+  
+  best_thresholds$k <- k_val
+  
+  write_csv(best_thresholds, file.path(data_root, paste0(k_val, "_nn_best_thresholds_per_serotype.csv")))
+  
+  # generate ROC curves for all
+  roc_result_all <- train %>%
+    nest() %>%
+    mutate(
+      roc = map(
+        data,
+        ~ roc(
+          response = .x$is_held_out,
+          predictor = .x$knn_distance,
+          levels = c(FALSE, TRUE),
+          direction = "<",
+          quiet = TRUE
+        )
+      ),
+      auc = map_dbl(roc, auc)
+    )
+  
+  # pick best threshold for all
+  best_threshold_all <- roc_result_all %>%
+    mutate(
+      best = purrr::map(
+        roc,
+        ~ pROC::coords(
+          .x,
+          x = "best",
+          best.method = "youden",
+          ret = c("threshold", "sensitivity", "specificity"),
+          transpose = FALSE
+        )
+      )
+    ) %>%
+    select(auc, best) %>%
+    tidyr::unnest(best)
+  
+  best_threshold_all$k <- k_val
+  
+  write_csv(best_threshold_all, file.path(data_root, paste0(k_val, "_nn_best_thresholds_all.csv")))
+  
+  # classify each serotype based on ROC
+  final_knn_df <- final_knn_df %>%
+    left_join(
+      best_thresholds %>%
+        select(nn_serotype, threshold),
+      by = "nn_serotype"
+    ) %>%
+    mutate(
+      is_novel_threshold_per_serotype = if_else(
+        is.na(threshold),
+        FALSE,
+        knn_distance > threshold
+      )
+    )
+  
+  test <- test %>%
+    left_join(
+      best_thresholds %>%
+        select(nn_serotype, threshold),
+      by = "nn_serotype"
+    ) %>%
+    mutate(
+      is_novel_threshold_per_serotype = if_else(
+        is.na(threshold),
+        FALSE,
+        knn_distance > threshold
+      )
+    )
+  
+  final_knn_df$threshold_all <- best_threshold_all$threshold
+  test$threshold_all <- best_threshold_all$threshold
+  
+  final_knn_df <- final_knn_df %>%
+    mutate(
+      is_novel_threshold_all = if_else(
+        is.na(threshold),
+        FALSE,
+        knn_distance > threshold_all
+      )
+    )
+  
+  test <- test %>%
+    mutate(
+      is_novel_threshold_all = if_else(
+        is.na(threshold),
+        FALSE,
+        knn_distance > threshold_all
+      )
+    )
+  
+  # determine classification accuracy
+  f1_beta <- 4
+  knn_metrics_per_serotype <- compute_metrics(test, "is_novel_threshold_per_serotype", f1_beta)
+  knn_metrics_all <- compute_metrics(test, "is_novel_threshold_all", f1_beta)
+  write_csv(knn_metrics_per_serotype, file.path(data_root, paste0("all_", k_val, "_nn_metrics_threshold_per_serotype.csv")))
+  write_csv(knn_metrics_all, file.path(data_root, paste0("all_", k_val, "_nn_metrics_threshold_all.csv")))
+  
+  write_csv(final_knn_df, file.path(data_root, "all_1_nn_results.csv"))
+}
+
+
 
 # determine distances of TPs etc
-knn_distances_per_serotype <- compute_distances(final_knn_df, "is_novel_threshold_per_serotype")
-knn_distances_all <- compute_distances(final_knn_df, "is_novel_threshold_all")
+kknn_distances_per_serotype <- compute_distances(final_knn_df, "is_novel_threshold_per_serotype")
+kknn_distances_all <- compute_distances(final_knn_df, "is_novel_threshold_all")
 
 # per serotype
-plot_data <- knn_distances_per_serotype %>%
+plot_data <- kknn_distances_per_serotype %>%
   select(Serotype,
          LQ_distances_TP,
          median_distances_TP,
@@ -369,11 +353,11 @@ p.distance <- ggplot(
   scale_color_npg()
 p.distance
 
-ggsave(file.path(plot_dir, "knn_distance_quartiles_threshold_per_serotype.png"), plot=p.distance, width = 9, height = 11)
-ggsave(file.path(plot_dir, "knn_distance_quartiles_threshold_per_serotype.pdf"), plot=p.distance, width = 9, height = 11)
+ggsave(file.path(plot_dir, "kknn_distance_quartiles_threshold_per_serotype.png"), plot=p.distance, width = 9, height = 11)
+ggsave(file.path(plot_dir, "kknn_distance_quartiles_threshold_per_serotype.pdf"), plot=p.distance, width = 9, height = 11)
 
 # all threshold
-plot_data <- knn_distances_all %>%
+plot_data <- kknn_distances_all %>%
   select(Serotype,
          LQ_distances_TP,
          median_distances_TP,
@@ -462,6 +446,6 @@ p.distance <- ggplot(
   scale_color_npg()
 p.distance
 
-ggsave(file.path(plot_dir, "knn_distance_quartiles_threshold_all.png"), plot=p.distance, width = 9, height = 11)
-ggsave(file.path(plot_dir, "knn_distance_quartiles_threshold_all.pdf"), plot=p.distance, width = 9, height = 11)
+ggsave(file.path(plot_dir, "kknn_distance_quartiles_threshold_all.png"), plot=p.distance, width = 9, height = 11)
+ggsave(file.path(plot_dir, "kknn_distance_quartiles_threshold_all.pdf"), plot=p.distance, width = 9, height = 11)
 
