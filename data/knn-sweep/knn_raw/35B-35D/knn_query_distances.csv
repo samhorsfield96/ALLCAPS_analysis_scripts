@@ -1,4 +1,0 @@
-sample_id,knn_distance,nn_distance,nn_serotype,nn_genogroup,is_novel
-ERR13365764#2,0.0,0.0,35B,35B_35D,False
-SRR26789366#9,0.13651478,0.13651478,11A,11,False
-SRR26833783#22,0.030326128,0.030326128,35B,35B_35D,False

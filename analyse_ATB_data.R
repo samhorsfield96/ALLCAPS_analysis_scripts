@@ -132,11 +132,12 @@ if (WRITE_NEW_INTERMEDIATE == TRUE) {
 min.GPSC.size <- 300
 
 proportion_data <- merged.df %>%
-  group_by(GPSC, predicted_serogroup, nn_serogroup, final_serogroup_prediction) %>%
+  filter(final_serogroup_prediction != "Non-cps") %>%
+  group_by(GPSC, predicted_serotype, predicted_serogroup, nn_serogroup, final_serogroup_prediction) %>%
   tally() %>%
   group_by(GPSC) %>%
   mutate(Proportion = n / sum(n)) %>%
-  filter(!is.na(GPSC),  GPSC != "nan", !str_detect(GPSC, ";"), final_serogroup_prediction != "Non-cps") %>%
+  filter(!is.na(GPSC),  GPSC != "nan", !str_detect(GPSC, ";")) %>%
   ungroup() %>%
   group_by(GPSC) %>%
   mutate(GPSC_total = sum(n)) %>%
@@ -195,6 +196,14 @@ top_proportion_data_novel <- proportion_data %>%
   #slice_max(order_by = Proportion, n = 1, with_ties = FALSE) %>%
   ungroup() 
 
+# determine counts per GPSC novel
+total_per_GPSC <- proportion_data %>%
+  group_by(GPSC) %>%
+  summarise(sum_prop = sum(Proportion), sum_count = sum(n)) 
+
+novel_per_GPSC <- top_proportion_data_novel %>%
+  group_by(GPSC) %>%
+  summarise(sum_prop = sum(Proportion), sum_count = sum(n)) 
 
 # Find GPSCs present in top_proportion_data but missing from top_proportion_data_novel
 missing_GPSC <- proportion_data %>%
