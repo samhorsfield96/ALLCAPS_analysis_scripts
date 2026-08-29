@@ -5,3 +5,6 @@
 .positai
 .Rproj
 .DS_Store
+data/knn-sweep/knn_raw/*
+data/*_knn_data.csv
+data/plots
