@@ -107,6 +107,7 @@ files_metrics_all <- list.files(file.path(data_root), pattern = "*_nn_metrics_th
 i <- 1
 for (file in files_metrics_per_serotype) {
   df <- read_csv(file, show_col_types = FALSE)
+  k_val <- unique(df$k)
   
   if (i == 1) {
     df_metrics_per_serotype <- df
@@ -128,6 +129,109 @@ for (file in files_metrics_all) {
   i <- i + 1
 }
 
+# Metrics to plot
+metric_cols <- c("sensitivity", "specificity", "precision", "f1")
+metric_labels <- c(
+  sensitivity = "Sensitivity",
+  specificity = "Specificity",
+  precision   = "Precision",
+  f1          = "F1 Score"
+)
+
+# per serotype results
+df_metrics_per_serotype_long <- df_metrics_per_serotype %>%
+  select(Serotype, k, all_of(metric_cols)) %>%
+  pivot_longer(all_of(metric_cols), names_to = "metric", values_to = "value") %>%
+  mutate(metric = factor(metric, levels = metric_cols))
+
+df_metrics_per_serotype_long$k <- factor(
+  df_metrics_per_serotype_long$k,
+  levels = sort(unique(df_metrics_per_serotype_long$k))
+)
+balanced <- df_metrics_per_serotype_long %>%
+  group_by(k, metric) %>%
+  summarise(balanced = mean(value, na.rm = TRUE), .groups = "drop")
+
+ymax_per <- df_metrics_per_serotype_long %>%
+  group_by(k, metric) %>%
+  summarise(y_pos = max(value, na.rm = TRUE), .groups = "drop")
+
+annot <- balanced %>%
+  left_join(ymax_per, by = c("k", "metric")) %>%
+  mutate(label = sprintf("%.3f", balanced), y_annot = pmin(y_pos + 0.04, 1.05))
+
+p.df_metrics_per_serotype <- ggplot(df_metrics_per_serotype_long, aes(x = k, y = value, fill = k)) +
+  geom_boxplot(outlier.size = 0.8, na.rm = TRUE) +
+  geom_point(data = annot, aes(x = k, y = balanced),
+             shape = 23, size = 3, fill = "white", colour = "black",
+             inherit.aes = FALSE) +
+  geom_text(data = annot, aes(x = k, y = y_annot, label = label),
+            size = 4, vjust = 0, inherit.aes = FALSE) +
+  facet_wrap(~metric, ncol = 2, labeller = labeller(metric = metric_labels)) +
+  scale_y_continuous(limits = c(0, 1.12), breaks = seq(0, 1, 0.2)) +
+  scale_fill_npg() +
+  labs(x = "K-value", y = "Score") +
+  theme_bw(base_size = 11) +
+  theme(
+    axis.text.x  = element_text(angle = 40, hjust = 1, size = 12),
+    axis.text.y  = element_text(size = 12),
+    strip.text   = element_text(face = "bold", size = 14),
+    axis.title.y = element_text(size = 16),
+    axis.title.x = element_text(size = 16),
+    plot.title   = element_text(face = "bold", size = 14),
+    legend.position = "none"
+  )
+
+ggsave(file.path(plot_dir, "nn_sensitivity_threshold_per_serotype.pdf"), plot=p.df_metrics_per_serotype, width = 9, height = 11)
+ggsave(file.path(plot_dir, "nn_sensitivity_threshold_per_serotype.png"), plot=p.df_metrics_per_serotype, width = 9, height = 11)
+
+# per serotype results
+df_metrics_all_long <- df_metrics_all %>%
+  select(Serotype, k, all_of(metric_cols)) %>%
+  pivot_longer(all_of(metric_cols), names_to = "metric", values_to = "value") %>%
+  mutate(metric = factor(metric, levels = metric_cols))
+
+df_metrics_all_long$k <- factor(
+  df_metrics_all_long$k,
+  levels = sort(unique(df_metrics_all_long$k))
+)
+
+balanced <- df_metrics_all_long %>%
+  group_by(k, metric) %>%
+  summarise(balanced = mean(value, na.rm = TRUE), .groups = "drop")
+
+ymax_per <- df_metrics_all_long %>%
+  group_by(k, metric) %>%
+  summarise(y_pos = max(value, na.rm = TRUE), .groups = "drop")
+
+annot <- balanced %>%
+  left_join(ymax_per, by = c("k", "metric")) %>%
+  mutate(label = sprintf("%.3f", balanced), y_annot = pmin(y_pos + 0.04, 1.05))
+
+p.df_metrics_all <- ggplot(df_metrics_all_long, aes(x = k, y = value, fill = k)) +
+  geom_boxplot(outlier.size = 0.8, na.rm = TRUE) +
+  geom_point(data = annot, aes(x = k, y = balanced),
+             shape = 23, size = 3, fill = "white", colour = "black",
+             inherit.aes = FALSE) +
+  geom_text(data = annot, aes(x = k, y = y_annot, label = label),
+            size = 4, vjust = 0, inherit.aes = FALSE) +
+  facet_wrap(~metric, ncol = 2, labeller = labeller(metric = metric_labels)) +
+  scale_y_continuous(limits = c(0, 1.12), breaks = seq(0, 1, 0.2)) +
+  scale_fill_npg() +
+  labs(x = "K-value", y = "Score") +
+  theme_bw(base_size = 11) +
+  theme(
+    axis.text.x  = element_text(angle = 40, hjust = 1, size = 12),
+    axis.text.y  = element_text(size = 12),
+    strip.text   = element_text(face = "bold", size = 14),
+    axis.title.y = element_text(size = 16),
+    axis.title.x = element_text(size = 16),
+    plot.title   = element_text(face = "bold", size = 14),
+    legend.position = "none"
+  )
+
+ggsave(file.path(plot_dir, "nn_sensitivity_threshold_all.pdf"), plot=p.df_metrics_all, width = 9, height = 11)
+ggsave(file.path(plot_dir, "nn_sensitivity_threshold_all.png"), plot=p.df_metrics_all, width = 9, height = 11)
 
 
 # to remove
@@ -214,9 +318,6 @@ for (i in seq_along(k_vals)) {
   ggsave(paste0(file.path(plot_dir, "knn_"), k_val, ".pdf"), plot=p, width = 18, height = 6)
   ggsave(paste0(file.path(plot_dir, "knn_"), k_val, ".png"), plot=p, width = 18, height = 6)
 }
-
-
-
 
 
 # analyse closest nearest neighbour

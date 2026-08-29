@@ -111,14 +111,6 @@ train_samples <- samples %>%
 test_samples <- samples %>%
   filter(!sample_id %in% train_samples$sample_id)
 
-# test assignments
-train %>%
-  distinct(sample_id, Serotype, is_held_out) %>%
-  count(Serotype, is_held_out)
-test %>%
-  distinct(sample_id, Serotype, is_held_out) %>%
-  count(Serotype, is_held_out)
-
 for (file in files) {
   final_knn_df <- read_csv(file, show_col_types = FALSE)
   
@@ -270,7 +262,9 @@ for (file in files) {
   # determine classification accuracy
   f1_beta <- 4
   knn_metrics_per_serotype <- compute_metrics(test, "is_novel_threshold_per_serotype", f1_beta)
+  knn_metrics_per_serotype$k <- k_val
   knn_metrics_all <- compute_metrics(test, "is_novel_threshold_all", f1_beta)
+  knn_metrics_all$k <- k_val
   write_csv(knn_metrics_per_serotype, file.path(data_root, paste0("all_", k_val, "_nn_metrics_threshold_per_serotype.csv")))
   write_csv(knn_metrics_all, file.path(data_root, paste0("all_", k_val, "_nn_metrics_threshold_all.csv")))
   
