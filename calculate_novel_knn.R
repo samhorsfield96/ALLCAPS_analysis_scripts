@@ -87,7 +87,35 @@ compute_distances <- function(final_knn_df, pred_col_name) {
   })
 }
 
+# read in first file, decide on samples to be testing and training to be consistent across k values
 set.seed(42)
+first_file <- files[1]
+example_knn_df <- read_csv(first_file, show_col_types = FALSE)
+
+samples <- example_knn_df %>%
+  distinct(sample_id, Serotype, is_held_out)
+
+# Select 90% of samples within each Serotype x is_held_out group
+train_samples <- samples %>%
+  group_by(Serotype, is_held_out) %>%
+  slice_sample(prop = 0.9) %>%
+  ungroup()
+
+# Put ALL rows from selected samples into training
+train <- example_knn_df %>%
+  semi_join(train_samples, by = "sample_id")
+
+# Everything else goes into testing
+test <- example_knn_df %>%
+  anti_join(train_samples, by = "sample_id")
+
+# test assignments
+train %>%
+  distinct(sample_id, Serotype, is_held_out) %>%
+  count(Serotype, is_held_out)
+test %>%
+  distinct(sample_id, Serotype, is_held_out) %>%
+  count(Serotype, is_held_out)
 
 for (file in files) {
   final_knn_df <- read_csv(file, show_col_types = FALSE)
@@ -99,22 +127,11 @@ for (file in files) {
   
   # split train and test data and check
   train <- final_knn_df %>%
-    group_by(Serotype, is_held_out) %>%
-    slice_sample(prop = 0.9) %>%
-    ungroup()
+    semi_join(train_samples, by = "sample_id")
   
+  # Everything else goes into testing
   test <- final_knn_df %>%
-    anti_join(train %>% select(.row_id), by = ".row_id")
-  
-  train %>%
-    count(Serotype, is_held_out) %>%
-    group_by(Serotype) %>%
-    mutate(prop = n / sum(n))
-  
-  test %>%
-    count(Serotype, is_held_out) %>%
-    group_by(Serotype) %>%
-    mutate(prop = n / sum(n))
+    anti_join(train_samples, by = "sample_id")
   
   # generate ROC curves per serotype
   roc_results <- train %>%
@@ -212,6 +229,7 @@ for (file in files) {
       )
     )
   
+  # classify test data
   test <- test %>%
     left_join(
       best_thresholds %>%
@@ -238,6 +256,7 @@ for (file in files) {
       )
     )
   
+  # classify test data
   test <- test %>%
     mutate(
       is_novel_threshold_all = if_else(
@@ -254,198 +273,197 @@ for (file in files) {
   write_csv(knn_metrics_per_serotype, file.path(data_root, paste0("all_", k_val, "_nn_metrics_threshold_per_serotype.csv")))
   write_csv(knn_metrics_all, file.path(data_root, paste0("all_", k_val, "_nn_metrics_threshold_all.csv")))
   
-  write_csv(final_knn_df, file.path(data_root, "all_1_nn_results.csv"))
+  write_csv(final_knn_df, file.path(data_root, paste0(k_val, "_nn_novelty_classification_results.csv")))
+  
+  # determine distances of TPs etc
+  knn_distances_per_serotype <- compute_distances(final_knn_df, "is_novel_threshold_per_serotype")
+  knn_distances_all <- compute_distances(final_knn_df, "is_novel_threshold_all")
+  
+  # per serotype
+  plot_data <- knn_distances_per_serotype %>%
+    select(Serotype,
+           LQ_distances_TP,
+           median_distances_TP,
+           UQ_distances_TP,
+           LQ_distances_FP,
+           median_distances_FP,
+           UQ_distances_FP,
+           LQ_distances_TN,
+           median_distances_TN,
+           UQ_distances_TN,
+           LQ_distances_FN,
+           median_distances_FN,
+           UQ_distances_FN) %>%
+    pivot_longer(
+      cols = c(
+        LQ_distances_TP,
+        median_distances_TP,
+        UQ_distances_TP,
+        LQ_distances_FP,
+        median_distances_FP,
+        UQ_distances_FP,
+        LQ_distances_TN,
+        median_distances_TN,
+        UQ_distances_TN,
+        LQ_distances_FN,
+        median_distances_FN,
+        UQ_distances_FN
+      ),
+      names_to = c("statistic", "group"),
+      names_pattern = "^(LQ|median|UQ)_distances_(TP|FP|TN|FN)$"
+    ) %>%
+    pivot_wider(
+      names_from = statistic,
+      values_from = value
+    ) %>%
+    rename(
+      ymin = LQ,
+      middle = median,
+      ymax = UQ
+    )
+  
+  #plot_data$group[plot_data$group == "held_out"] <- "Novel"
+  #plot_data$group[plot_data$group == "training"] <- "Training"
+  
+  plot_data <- plot_data %>%
+    mutate(
+      serotype_number = as.numeric(sub("^([0-9]+).*", "\\1", Serotype)),
+      serotype_suffix = sub("^[0-9]+", "", Serotype)
+    ) %>%
+    arrange(serotype_number, serotype_suffix) %>%
+    mutate(
+      Serotype = factor(Serotype, levels = unique(Serotype))
+    ) %>%
+    select(-serotype_number, -serotype_suffix)
+  
+  plot_data$group <- factor(plot_data$group, levels = c("TP", "FP", "TN", "FN"))
+  
+  # generate distance plots showing distances between NNs for held-out and known serotypes
+  p.distance <- ggplot(
+    plot_data,
+    aes(
+      x = Serotype,
+      y = middle,
+      ymin = ymin,
+      ymax = ymax,
+      group = group
+    )
+  ) +
+    geom_errorbar(
+      aes(color = group),
+      position = position_dodge(width = 0.5),
+      width = 0.15
+    ) +
+    geom_point(
+      aes(color = group),
+      position = position_dodge(width = 0.5),
+      size = 2
+    ) +
+    coord_flip() +
+    labs(
+      x = "Serotype",
+      y = "1st NN Cosine Distance",
+      color = "Classification"
+    ) +
+    theme_light() +
+    scale_color_npg()
+  p.distance
+  
+  ggsave(file.path(plot_dir, paste0(k_val, "_nn_distance_quartiles_threshold_per_serotype.png")), plot=p.distance, width = 9, height = 11)
+  ggsave(file.path(plot_dir, paste0(k_val, "_nn_distance_quartiles_threshold_per_serotype.pdf")), plot=p.distance, width = 9, height = 11)
+  
+  # all threshold
+  plot_data <- knn_distances_all %>%
+    select(Serotype,
+           LQ_distances_TP,
+           median_distances_TP,
+           UQ_distances_TP,
+           LQ_distances_FP,
+           median_distances_FP,
+           UQ_distances_FP,
+           LQ_distances_TN,
+           median_distances_TN,
+           UQ_distances_TN,
+           LQ_distances_FN,
+           median_distances_FN,
+           UQ_distances_FN) %>%
+    pivot_longer(
+      cols = c(
+        LQ_distances_TP,
+        median_distances_TP,
+        UQ_distances_TP,
+        LQ_distances_FP,
+        median_distances_FP,
+        UQ_distances_FP,
+        LQ_distances_TN,
+        median_distances_TN,
+        UQ_distances_TN,
+        LQ_distances_FN,
+        median_distances_FN,
+        UQ_distances_FN
+      ),
+      names_to = c("statistic", "group"),
+      names_pattern = "^(LQ|median|UQ)_distances_(TP|FP|TN|FN)$"
+    ) %>%
+    pivot_wider(
+      names_from = statistic,
+      values_from = value
+    ) %>%
+    rename(
+      ymin = LQ,
+      middle = median,
+      ymax = UQ
+    )
+  
+  #plot_data$group[plot_data$group == "held_out"] <- "Novel"
+  #plot_data$group[plot_data$group == "training"] <- "Training"
+  
+  plot_data <- plot_data %>%
+    mutate(
+      serotype_number = as.numeric(sub("^([0-9]+).*", "\\1", Serotype)),
+      serotype_suffix = sub("^[0-9]+", "", Serotype)
+    ) %>%
+    arrange(serotype_number, serotype_suffix) %>%
+    mutate(
+      Serotype = factor(Serotype, levels = unique(Serotype))
+    ) %>%
+    select(-serotype_number, -serotype_suffix)
+  
+  plot_data$group <- factor(plot_data$group, levels = c("TP", "FP", "TN", "FN"))
+  
+  # generate distance plots showing distances between NNs for held-out and known serotypes
+  p.distance <- ggplot(
+    plot_data,
+    aes(
+      x = Serotype,
+      y = middle,
+      ymin = ymin,
+      ymax = ymax,
+      group = group
+    )
+  ) +
+    geom_errorbar(
+      aes(color = group),
+      position = position_dodge(width = 0.5),
+      width = 0.15
+    ) +
+    geom_point(
+      aes(color = group),
+      position = position_dodge(width = 0.5),
+      size = 2
+    ) +
+    coord_flip() +
+    labs(
+      x = "Serotype",
+      y = "1st NN Cosine Distance",
+      color = "Sample Type"
+    ) +
+    theme_light() +
+    scale_color_npg()
+  p.distance
+  
+  ggsave(file.path(plot_dir, paste0(k_val, "_nn_distance_quartiles_threshold_all.png")), plot=p.distance, width = 9, height = 11)
+  ggsave(file.path(plot_dir, paste0(k_val, "_nn_distance_quartiles_threshold_all.png")), plot=p.distance, width = 9, height = 11)
 }
 
-
-
-# determine distances of TPs etc
-kknn_distances_per_serotype <- compute_distances(final_knn_df, "is_novel_threshold_per_serotype")
-kknn_distances_all <- compute_distances(final_knn_df, "is_novel_threshold_all")
-
-# per serotype
-plot_data <- kknn_distances_per_serotype %>%
-  select(Serotype,
-         LQ_distances_TP,
-         median_distances_TP,
-         UQ_distances_TP,
-         LQ_distances_FP,
-         median_distances_FP,
-         UQ_distances_FP,
-         LQ_distances_TN,
-         median_distances_TN,
-         UQ_distances_TN,
-         LQ_distances_FN,
-         median_distances_FN,
-         UQ_distances_FN) %>%
-  pivot_longer(
-    cols = c(
-      LQ_distances_TP,
-      median_distances_TP,
-      UQ_distances_TP,
-      LQ_distances_FP,
-      median_distances_FP,
-      UQ_distances_FP,
-      LQ_distances_TN,
-      median_distances_TN,
-      UQ_distances_TN,
-      LQ_distances_FN,
-      median_distances_FN,
-      UQ_distances_FN
-    ),
-    names_to = c("statistic", "group"),
-    names_pattern = "^(LQ|median|UQ)_distances_(TP|FP|TN|FN)$"
-  ) %>%
-  pivot_wider(
-    names_from = statistic,
-    values_from = value
-  ) %>%
-  rename(
-    ymin = LQ,
-    middle = median,
-    ymax = UQ
-  )
-
-#plot_data$group[plot_data$group == "held_out"] <- "Novel"
-#plot_data$group[plot_data$group == "training"] <- "Training"
-
-plot_data <- plot_data %>%
-  mutate(
-    serotype_number = as.numeric(sub("^([0-9]+).*", "\\1", Serotype)),
-    serotype_suffix = sub("^[0-9]+", "", Serotype)
-  ) %>%
-  arrange(serotype_number, serotype_suffix) %>%
-  mutate(
-    Serotype = factor(Serotype, levels = unique(Serotype))
-  ) %>%
-  select(-serotype_number, -serotype_suffix)
-
-plot_data$group <- factor(plot_data$group, levels = c("TP", "FP", "TN", "FN"))
-
-# generate distance plots showing distances between NNs for held-out and known serotypes
-p.distance <- ggplot(
-  plot_data,
-  aes(
-    x = Serotype,
-    y = middle,
-    ymin = ymin,
-    ymax = ymax,
-    group = group
-  )
-) +
-  geom_errorbar(
-    aes(color = group),
-    position = position_dodge(width = 0.5),
-    width = 0.15
-  ) +
-  geom_point(
-    aes(color = group),
-    position = position_dodge(width = 0.5),
-    size = 2
-  ) +
-  coord_flip() +
-  labs(
-    x = "Serotype",
-    y = "1st NN Cosine Distance",
-    color = "Classification"
-  ) +
-  theme_light() +
-  scale_color_npg()
-p.distance
-
-ggsave(file.path(plot_dir, "kknn_distance_quartiles_threshold_per_serotype.png"), plot=p.distance, width = 9, height = 11)
-ggsave(file.path(plot_dir, "kknn_distance_quartiles_threshold_per_serotype.pdf"), plot=p.distance, width = 9, height = 11)
-
-# all threshold
-plot_data <- kknn_distances_all %>%
-  select(Serotype,
-         LQ_distances_TP,
-         median_distances_TP,
-         UQ_distances_TP,
-         LQ_distances_FP,
-         median_distances_FP,
-         UQ_distances_FP,
-         LQ_distances_TN,
-         median_distances_TN,
-         UQ_distances_TN,
-         LQ_distances_FN,
-         median_distances_FN,
-         UQ_distances_FN) %>%
-  pivot_longer(
-    cols = c(
-      LQ_distances_TP,
-      median_distances_TP,
-      UQ_distances_TP,
-      LQ_distances_FP,
-      median_distances_FP,
-      UQ_distances_FP,
-      LQ_distances_TN,
-      median_distances_TN,
-      UQ_distances_TN,
-      LQ_distances_FN,
-      median_distances_FN,
-      UQ_distances_FN
-    ),
-    names_to = c("statistic", "group"),
-    names_pattern = "^(LQ|median|UQ)_distances_(TP|FP|TN|FN)$"
-  ) %>%
-  pivot_wider(
-    names_from = statistic,
-    values_from = value
-  ) %>%
-  rename(
-    ymin = LQ,
-    middle = median,
-    ymax = UQ
-  )
-
-#plot_data$group[plot_data$group == "held_out"] <- "Novel"
-#plot_data$group[plot_data$group == "training"] <- "Training"
-
-plot_data <- plot_data %>%
-  mutate(
-    serotype_number = as.numeric(sub("^([0-9]+).*", "\\1", Serotype)),
-    serotype_suffix = sub("^[0-9]+", "", Serotype)
-  ) %>%
-  arrange(serotype_number, serotype_suffix) %>%
-  mutate(
-    Serotype = factor(Serotype, levels = unique(Serotype))
-  ) %>%
-  select(-serotype_number, -serotype_suffix)
-
-plot_data$group <- factor(plot_data$group, levels = c("TP", "FP", "TN", "FN"))
-
-# generate distance plots showing distances between NNs for held-out and known serotypes
-p.distance <- ggplot(
-  plot_data,
-  aes(
-    x = Serotype,
-    y = middle,
-    ymin = ymin,
-    ymax = ymax,
-    group = group
-  )
-) +
-  geom_errorbar(
-    aes(color = group),
-    position = position_dodge(width = 0.5),
-    width = 0.15
-  ) +
-  geom_point(
-    aes(color = group),
-    position = position_dodge(width = 0.5),
-    size = 2
-  ) +
-  coord_flip() +
-  labs(
-    x = "Serotype",
-    y = "1st NN Cosine Distance",
-    color = "Sample Type"
-  ) +
-  theme_light() +
-  scale_color_npg()
-p.distance
-
-ggsave(file.path(plot_dir, "kknn_distance_quartiles_threshold_all.png"), plot=p.distance, width = 9, height = 11)
-ggsave(file.path(plot_dir, "kknn_distance_quartiles_threshold_all.pdf"), plot=p.distance, width = 9, height = 11)
-
+# TODO compare AUCs across all k-values like in plot_knn
