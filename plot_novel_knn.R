@@ -13,6 +13,127 @@ library(pROC)
 library(purrr)
 
 data_root <- file.path(dirname(rstudioapi::getSourceEditorContext()$path), "data")
+# assign out put directories
+plot_dir <- file.path(data_root, "plots")
+dir.create(plot_dir, showWarnings = FALSE)
+
+#TODO plot AUROCs across k-nn values
+files_threshold_per_serotype <- list.files(file.path(data_root), pattern = "*_nn_best_thresholds_per_serotype.csv", recursive = TRUE, full.names = TRUE)
+files_threshold_all <- list.files(file.path(data_root), pattern = "*_nn_best_thresholds_all.csv", recursive = TRUE, full.names = TRUE)
+
+i <- 1
+for (file in files_threshold_per_serotype) {
+  df <- read_csv(file, show_col_types = FALSE)
+  
+  if (i == 1) {
+    df_threshold_per_serotype <- df
+  } else {
+    df_threshold_per_serotype <- rbind(df_threshold_per_serotype, df)
+  }
+  i <- i + 1
+}
+
+i <- 1
+for (file in files_threshold_all) {
+  df <- read_csv(file, show_col_types = FALSE)
+  
+  if (i == 1) {
+    df_threshold_all <- df
+  } else {
+    df_threshold_all <- rbind(df_threshold_all, df)
+  }
+  i <- i + 1
+}
+
+# generate plot showing best K for each serotype
+p.box <- ggplot(
+  df_threshold_per_serotype,
+  aes(
+    x = as.factor(k),
+    y = auc,
+    colour = as.factor(k)
+  )
+) +
+  geom_boxplot(outliers = TRUE) +
+  geom_hline(yintercept = 0.5, linetype = "dashed") +
+  theme_light() +
+  labs(
+    x = "K-value",
+    y = "AUROC"
+  ) +
+  # Mean point
+  stat_summary(
+    fun = median,
+    geom = "point",
+    shape = 18,
+    size = 3,
+    colour = "black"
+  ) +
+  
+  # Mean value as text
+  stat_summary(
+    fun = median,
+    geom = "text",
+    aes(label = sprintf("%.3f", after_stat(y))),
+    vjust = 2.0,
+    colour = "black",
+    size = 3.5
+  ) +
+  theme(
+    strip.text = element_text(face = "bold", size = 14),
+    axis.text = element_text(size = 12),
+    axis.title = element_text(size = 14),
+    legend.position = "none"
+  ) + 
+  scale_color_npg() +
+  scale_y_continuous(limits = c(0, 1.0)) +
+  geom_point(
+    data = df_threshold_all,
+    aes(x = factor(k), y = auc),
+    shape = 4,
+    size = 3,
+    stroke = 1.2
+  )
+p.box
+
+ggsave(file.path(plot_dir, "k_vs_AUROC_boxplot.png"), plot=p.box, width = 9, height = 6)
+ggsave(file.path(plot_dir, "k_vs_AUROC_boxplot.pdf"), plot=p.box, width = 9, height = 6)
+
+
+#TODO plot accuracy values across k-nn values
+files_metrics_per_serotype <- list.files(file.path(data_root), pattern = "*_nn_metrics_threshold_per_serotype.csv", recursive = TRUE, full.names = TRUE)
+files_metrics_all <- list.files(file.path(data_root), pattern = "*_nn_metrics_threshold_all.csv", recursive = TRUE, full.names = TRUE)
+
+i <- 1
+for (file in files_metrics_per_serotype) {
+  df <- read_csv(file, show_col_types = FALSE)
+  
+  if (i == 1) {
+    df_metrics_per_serotype <- df
+  } else {
+    df_metrics_per_serotype <- rbind(df_metrics_per_serotype, df)
+  }
+  i <- i + 1
+}
+
+i <- 1
+for (file in files_metrics_all) {
+  df <- read_csv(file, show_col_types = FALSE)
+  
+  if (i == 1) {
+    df_metrics_all <- df
+  } else {
+    df_metrics_all <- rbind(df_metrics_all, df)
+  }
+  i <- i + 1
+}
+
+
+
+# to remove
+
+
+data_root <- file.path(dirname(rstudioapi::getSourceEditorContext()$path), "data")
 metrics   <- read.csv(file.path(data_root, "knn-sweep", "k_sweep_per_fold.csv"))
 #ground_truth <- read.csv(file.path(data_root, "GPS_benchmark", "ground_truth.csv"))
 
@@ -94,99 +215,9 @@ for (i in seq_along(k_vals)) {
   ggsave(paste0(file.path(plot_dir, "knn_"), k_val, ".png"), plot=p, width = 18, height = 6)
 }
 
-# Ensure k is ordered numerically
-metrics <- metrics %>%
-  arrange(
-    as.numeric(as.character(serogroup)),
-    as.numeric(str_extract(serotype, "^\\d+")),
-    str_extract(serotype, "[A-Za-z]+$")
-  )
 
-metrics$serotype <- factor(
-  metrics$serotype,
-  levels = unique(metrics$serotype)
-)
 
-p.all <- ggplot(
-  metrics,
-  aes(
-    x = k,
-    y = auroc,
-    colour = serogroup
-  )
-) +
-  geom_point(size = 3) +
-  geom_line() +
-  geom_hline(yintercept = 0.5, linetype = "dashed") +
-  facet_wrap(~ serotype) +   # replace facet_variable with your column
-  theme_light() +
-  labs(
-    x = "K-value",
-    y = "AUROC"
-  ) +
-  theme(
-    strip.text = element_text(face = "bold", size = 14),
-    axis.text = element_text(size = 12),
-    axis.title = element_text(size = 14),
-    legend.position = "none"
-  ) + 
-  scale_x_log10() +
-  scale_colour_manual(
-    values = cols,
-    breaks = as.character(serogroups)
-  ) +
-  scale_y_continuous(limits = c(0, 1.0))
-p.all
 
-ggsave(file.path(plot_dir, "knn_all.png"), plot=p.all, width = 18, height = 12)
-ggsave(file.path(plot_dir, "knn_all.pdf"), plot=p.all, width = 18, height = 12)
-
-# generate plot showing best K for each serotype
-p.box <- ggplot(
-  metrics,
-  aes(
-    x = as.factor(k),
-    y = auroc,
-    colour = as.factor(k)
-  )
-) +
-  geom_boxplot(outliers = TRUE) +
-  geom_hline(yintercept = 0.5, linetype = "dashed") +
-  theme_light() +
-  labs(
-    x = "K-value",
-    y = "AUROC"
-  ) +
-  # Mean point
-  stat_summary(
-    fun = median,
-    geom = "point",
-    shape = 18,
-    size = 3,
-    colour = "black"
-  ) +
-  
-  # Mean value as text
-  stat_summary(
-    fun = median,
-    geom = "text",
-    aes(label = sprintf("%.3f", after_stat(y))),
-    vjust = 2.0,
-    colour = "black",
-    size = 3.5
-  ) +
-  theme(
-    strip.text = element_text(face = "bold", size = 14),
-    axis.text = element_text(size = 12),
-    axis.title = element_text(size = 14),
-    legend.position = "none"
-  ) + 
-  scale_color_npg() +
-  scale_y_continuous(limits = c(0, 1.0))
-p.box
-
-ggsave(file.path(plot_dir, "k_vs_AUROC_boxplot.png"), plot=p.box, width = 9, height = 6)
-ggsave(file.path(plot_dir, "k_vs_AUROC_boxplot.pdf"), plot=p.box, width = 9, height = 6)
 
 # analyse closest nearest neighbour
 nn_metrics   <- read.csv(file.path(data_root, "knn-sweep", "knn_nn_summary.csv"))

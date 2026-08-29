@@ -106,4 +106,4 @@ for (k_val in k_vals) {
 }
 
 # filter combined merged
-final_knn_df <- final_knn_df %>% filter(loo_serotype %in% allcaps_serotypes)
+#final_knn_df <- final_knn_df %>% filter(loo_serotype %in% allcaps_serotypes)

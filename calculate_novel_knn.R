@@ -92,7 +92,14 @@ set.seed(42)
 first_file <- files[1]
 example_knn_df <- read_csv(first_file, show_col_types = FALSE)
 
+# testing_data <- example_knn_df %>%
+#   filter(dataset == "Testing" & benchmark == "GPS benchmark")
+# training_data <- example_knn_df %>%
+#   filter(dataset == "Training" & benchmark == "GPS benchmark")
+
+# only include genomes used in training
 samples <- example_knn_df %>%
+  filter(dataset == "Training" & benchmark == "GPS benchmark") %>%
   distinct(sample_id, Serotype, is_held_out)
 
 # Select 90% of samples within each Serotype x is_held_out group
@@ -101,13 +108,8 @@ train_samples <- samples %>%
   slice_sample(prop = 0.9) %>%
   ungroup()
 
-# Put ALL rows from selected samples into training
-train <- example_knn_df %>%
-  semi_join(train_samples, by = "sample_id")
-
-# Everything else goes into testing
-test <- example_knn_df %>%
-  anti_join(train_samples, by = "sample_id")
+test_samples <- samples %>%
+  filter(!sample_id %in% train_samples$sample_id)
 
 # test assignments
 train %>%
@@ -127,11 +129,10 @@ for (file in files) {
   
   # split train and test data and check
   train <- final_knn_df %>%
-    semi_join(train_samples, by = "sample_id")
+    filter(sample_id %in% train_samples$sample_id)
   
-  # Everything else goes into testing
   test <- final_knn_df %>%
-    anti_join(train_samples, by = "sample_id")
+    filter(sample_id %in% test_samples$sample_id)
   
   # generate ROC curves per serotype
   roc_results <- train %>%
@@ -466,4 +467,3 @@ for (file in files) {
   ggsave(file.path(plot_dir, paste0(k_val, "_nn_distance_quartiles_threshold_all.png")), plot=p.distance, width = 9, height = 11)
 }
 
-# TODO compare AUCs across all k-values like in plot_knn
