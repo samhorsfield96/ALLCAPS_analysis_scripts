@@ -233,5 +233,7 @@ p.df_metrics_all <- ggplot(df_metrics_all_long, aes(x = k, y = value, fill = k))
 ggsave(file.path(plot_dir, "nn_sensitivity_threshold_all.pdf"), plot=p.df_metrics_all, width = 9, height = 11)
 ggsave(file.path(plot_dir, "nn_sensitivity_threshold_all.png"), plot=p.df_metrics_all, width = 9, height = 11)
 
+# TODO plot sensitivity vs specificity for each LOO serotype scatter for each k-value
+# also include distributions of distances for each serotype, 
 
-#TODO reclassify ATB data
+#TODO reclassify ATB data, need to determine which is nearest neighbour and quote accuracy of nearest neighbour assignment per serotype

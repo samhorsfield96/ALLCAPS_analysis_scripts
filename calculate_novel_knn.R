@@ -360,6 +360,19 @@ for (file in files) {
       position = position_dodge(width = 0.5),
       size = 2
     ) +
+    # Per-serotype threshold
+    geom_errorbar(
+      data = best_thresholds,
+      aes(
+        x = nn_serotype,
+        ymin = threshold,
+        ymax = threshold
+      ),
+      width = 0.7,
+      color = "purple",
+      linewidth = 1,
+      inherit.aes = FALSE
+    ) +
     coord_flip() +
     labs(
       x = "Serotype",
@@ -433,6 +446,7 @@ for (file in files) {
   plot_data$group <- factor(plot_data$group, levels = c("TP", "FP", "TN", "FN"))
   
   # generate distance plots showing distances between NNs for held-out and known serotypes
+  overall_threshold <- best_threshold_all$threshold
   p.distance <- ggplot(
     plot_data,
     aes(
@@ -454,6 +468,13 @@ for (file in files) {
       size = 2
     ) +
     coord_flip() +
+    # overall
+    geom_hline(
+      yintercept = overall_threshold,
+      color = "purple",
+      linewidth = 1,
+      linetype = "dashed"
+    ) +
     labs(
       x = "Serotype",
       y = "1st NN Cosine Distance",
@@ -465,5 +486,7 @@ for (file in files) {
   
   ggsave(file.path(plot_dir, paste0(k_val, "_nn_distance_quartiles_threshold_all.png")), plot=p.distance, width = 9, height = 11)
   ggsave(file.path(plot_dir, paste0(k_val, "_nn_distance_quartiles_threshold_all.png")), plot=p.distance, width = 9, height = 11)
+  
+  #TODO add threshold boundaries as horizontal lines to distance plots
 }
 
