@@ -107,9 +107,14 @@ train_samples <- samples %>%
   group_by(nn_serotype, is_held_out) %>%
   slice_sample(prop = 0.9) %>%
   ungroup()
+train_samples$dataset <- "Training"
 
 test_samples <- samples %>%
   filter(!idx %in% train_samples$idx)
+test_samples$dataset <- "Testing"
+
+all_samples <- rbind(train_samples, test_samples)
+write_csv(all_samples, file.path(data_root, paste0("nn_training_testing_data.csv")))
 
 for (file in files) {
   final_knn_df <- read_csv(file, show_col_types = FALSE)
