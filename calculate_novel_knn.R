@@ -90,7 +90,7 @@ compute_distances <- function(final_knn_df, pred_col_name) {
 # read in first file, decide on samples to be testing and training to be consistent across k values
 set.seed(42)
 first_file <- files[1]
-example_knn_df <- read_csv(first_file, show_col_types = FALSE)
+samples <- read_csv(first_file, show_col_types = FALSE)
 
 # testing_data <- example_knn_df %>%
 #   filter(dataset == "Testing" & benchmark == "GPS benchmark")
@@ -98,21 +98,22 @@ example_knn_df <- read_csv(first_file, show_col_types = FALSE)
 #   filter(dataset == "Training" & benchmark == "GPS benchmark")
 
 # only include genomes used in training
-samples <- example_knn_df %>%
-  filter(dataset == "Training" & benchmark == "GPS benchmark") %>%
-  distinct(sample_id, Serotype, is_held_out)
+samples <- samples %>%
+  filter(dataset == "Training" & benchmark == "GPS benchmark")
+samples$idx <- paste0(samples$sample_id, "_", samples$Contig_ID, "_", samples$loo_serotype, "_",samples$nn_serotype, "_", samples$is_held_out)
 
-# Select 90% of samples within each Serotype x is_held_out group
+# Select 90% of samples within each nn_serotype x is_held_out group
 train_samples <- samples %>%
-  group_by(Serotype, is_held_out) %>%
+  group_by(nn_serotype, is_held_out) %>%
   slice_sample(prop = 0.9) %>%
   ungroup()
 
 test_samples <- samples %>%
-  filter(!sample_id %in% train_samples$sample_id)
+  filter(!idx %in% train_samples$idx)
 
 for (file in files) {
   final_knn_df <- read_csv(file, show_col_types = FALSE)
+  final_knn_df$idx <- paste0(final_knn_df$sample_id, "_", final_knn_df$Contig_ID, "_", final_knn_df$loo_serotype, "_",final_knn_df$nn_serotype, "_", final_knn_df$is_held_out)
   
   k_val <- unique(final_knn_df$k)
   
@@ -121,10 +122,10 @@ for (file in files) {
   
   # split train and test data and check
   train <- final_knn_df %>%
-    filter(sample_id %in% train_samples$sample_id)
+    filter(idx %in% train_samples$idx)
   
   test <- final_knn_df %>%
-    filter(sample_id %in% test_samples$sample_id)
+    filter(idx %in% test_samples$idx)
   
   # generate ROC curves per serotype
   roc_results <- train %>%
