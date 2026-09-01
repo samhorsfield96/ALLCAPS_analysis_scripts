@@ -11,6 +11,8 @@ library(ggpubr)
 library(MLmetrics)
 library(pROC)
 library(purrr)
+library(ggrepel)
+library(tidyverse)
 
 data_root <- file.path(dirname(rstudioapi::getSourceEditorContext()$path), "data")
 # assign out put directories
@@ -235,5 +237,63 @@ ggsave(file.path(plot_dir, "nn_sensitivity_threshold_all.png"), plot=p.df_metric
 
 # TODO plot sensitivity vs specificity for each LOO serotype scatter for each k-value
 # also include distributions of distances for each serotype, 
+
+k_vals <- sort(unique(df_metrics_per_serotype_long$k))
+
+for (k_val in k_vals) {
+  k_df <- subset(df_metrics_per_serotype, k == k_val & Total > 0)
+  # Order serotypes by sensitivity (highest -> lowest)
+  serotype_order <- k_df %>%
+    arrange(sensitivity) %>%
+    pull(Serotype)
+  
+  plot_data <- k_df %>%
+    select(Serotype, sensitivity, specificity) %>%
+    pivot_longer(
+      cols = c(sensitivity, specificity),
+      names_to = "Metric",
+      values_to = "Value"
+    ) %>%
+    mutate(
+      Serotype = factor(Serotype, levels = serotype_order)
+    )
+  
+  plot_data$Metric[plot_data$Metric == "sensitivity"] <- "Sensitivity"
+  plot_data$Metric[plot_data$Metric == "specificity"] <- "Specificity"
+  
+  p.acc <- ggplot(plot_data, aes(x = Serotype, y = Value, group = Serotype)) +
+    geom_line(
+      aes(group = Serotype),
+      colour = "grey60",
+      linewidth = 0.6
+    ) +
+    geom_point(
+      aes(colour = Metric),
+      size = 3
+    ) +
+    scale_y_continuous(
+      limits = c(0, 1),
+      breaks = seq(0, 1, 0.1)
+    ) +
+    labs(
+      x = "Serotype",
+      y = "Statistic Value",
+      colour = NULL
+    ) +
+    theme_light() +
+    coord_flip() +
+    theme(
+      axis.text.x = element_text(size = 10),
+      axis.text.y = element_text(size = 10),
+      legend.title = element_text(face = "bold", size = 14),
+      legend.text = element_text(size = 16),
+      axis.title = element_text(face = "bold", size = 16),
+      legend.position = "right"
+    ) + scale_colour_npg()
+  p.acc
+  
+  ggsave(file.path(plot_dir, paste0(k_val, "_accuracy_threshold_per_serotype.pdf")), plot=p.acc, width = 7, height = 12)
+  ggsave(file.path(plot_dir, paste0(k_val, "_accuracy_threshold_per_serotype.png")), plot=p.acc, width = 7, height = 12)
+}
 
 #TODO reclassify ATB data, need to determine which is nearest neighbour and quote accuracy of nearest neighbour assignment per serotype

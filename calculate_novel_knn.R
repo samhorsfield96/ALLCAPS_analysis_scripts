@@ -486,7 +486,5 @@ for (file in files) {
   
   ggsave(file.path(plot_dir, paste0(k_val, "_nn_distance_quartiles_threshold_all.png")), plot=p.distance, width = 9, height = 11)
   ggsave(file.path(plot_dir, paste0(k_val, "_nn_distance_quartiles_threshold_all.png")), plot=p.distance, width = 9, height = 11)
-  
-  #TODO add threshold boundaries as horizontal lines to distance plots
 }
 
