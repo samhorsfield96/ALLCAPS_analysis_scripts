@@ -64,7 +64,9 @@ if (WRITE_NEW_INTERMEDIATE == TRUE) {
     filter(!grepl("NONCBL#", sample_id, fixed = TRUE)) %>%
     mutate(sample_id = sub("#.*$", "", sample_id),
            predicted_serotype = pred_argmax,
+           predicted_serotype = trimws(sub("(?i)serogroup\\s*", "", predicted_serotype, perl = TRUE)),
            predicted_serogroup = sub("^([0-9]+).*", "\\1", predicted_serotype),
+           nn_serotype = trimws(sub("(?i)serogroup\\s*", "", nn_serotype, perl = TRUE)),
            nn_serogroup = sub("^([0-9]+).*", "\\1", nn_serotype)) %>%
     group_by(sample_id) %>%
     arrange(
@@ -172,7 +174,8 @@ proportion_data <- merged.df %>%
 proportion_data$predicted_serogroup <- as.character(proportion_data$predicted_serogroup)
 
 # Define ordered serogroups and colours for plots
-serogroups <- as.character(sort(as.numeric(unique(as.character(proportion_data$predicted_serogroup)))))
+unique_serogroups <- as.numeric(unique(c(as.character(proportion_data$predicted_serogroup), as.character(proportion_data$nn_serogroup))))
+serogroups <- as.character(sort(unique_serogroups))
 palette_seed <- 42
 
 set.seed(palette_seed)
