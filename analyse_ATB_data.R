@@ -21,7 +21,8 @@ library(patchwork)
 WRITE_NEW_INTERMEDIATE <- FALSE
 
 data_root <- file.path(dirname(rstudioapi::getSourceEditorContext()$path), "data")
-sample.file <- file.path(data_root, "ATB_query_results_knn.csv")
+sample.file.knn <- file.path(data_root, "ATB_query_results_knn.csv")
+sample.file <- file.path(data_root, "ATB_query_results.csv")
 
 generate_tree <- function(tree, dataframe){
   # remove tips with no data
@@ -55,12 +56,19 @@ tree <- read.tree(tree.file)
 
 if (WRITE_NEW_INTERMEDIATE == TRUE) {
   # ensure pick contig with that is non-novel, is cbl and then has highest serotype confidence
-  sample.df <- read_csv(sample.file, show_col_types = FALSE) %>%
+  sample.df.knn <- read_csv(sample.file.knn, show_col_types = FALSE) %>%
+    filter(rank == 1)
+  sample.df.samples <- read_csv(sample.file, show_col_types = FALSE) 
+  
+  sample.df <- merge(sample.df.samples, sample.df.knn, by = "sample_id") %>%
     filter(!grepl("NONCBL#", sample_id, fixed = TRUE)) %>%
-    mutate(sample_id = sub("#.*$", "", sample_id)) %>%
+    mutate(sample_id = sub("#.*$", "", sample_id),
+           predicted_serotype = pred_argmax,
+           predicted_serogroup = sub("^([0-9]+).*", "\\1", predicted_serotype),
+           nn_serogroup = sub("^([0-9]+).*", "\\1", nn_serotype)) %>%
     group_by(sample_id) %>%
     arrange(
-      desc(is_cbl & !is_novel_serogroup),
+      desc(is_cbl),
       desc(serotype_confidence)
     ) %>%
     slice(1) %>%
@@ -70,8 +78,6 @@ if (WRITE_NEW_INTERMEDIATE == TRUE) {
       predicted_serotype,
       predicted_serogroup,
       is_cbl,
-      is_novel_serogroup,
-      is_novel_energy,
       nn_serotype,
       nn_serogroup,
       nn_genogroup,
@@ -80,9 +86,26 @@ if (WRITE_NEW_INTERMEDIATE == TRUE) {
     mutate(
       tool = "ALLCAPS",
     )
-  colnames(sample.df) <- c("tip", "predicted_serotype", "predicted_serogroup", "is_cbl", "is_novel_serogroup", "is_novel_energy", "nn_serotype",
+  colnames(sample.df) <- c("tip", "predicted_serotype", "predicted_serogroup", "is_cbl", "nn_serotype",
                            "nn_serogroup", "nn_genogroup", "nn_distance", "tool")
 
+  # assign novel genomes
+  best_thresholds <- read_csv(file.path(data_root, "1_nn_best_thresholds_per_serotype.csv"))
+  
+  # classify test data
+  sample.df <- sample.df %>%
+    left_join(
+      best_thresholds %>%
+        select(nn_serotype, threshold),
+      by = "nn_serotype"
+    ) %>%
+    mutate(
+      is_novel_serogroup = if_else(
+        is.na(threshold),
+        FALSE,
+        nn_distance > threshold
+      )
+    )
   
   #only run if downsampling tree
   tree_list <- generate_tree(tree, sample.df)
