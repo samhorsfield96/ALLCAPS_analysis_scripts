@@ -23,6 +23,18 @@ dir.create(plot_dir, showWarnings = FALSE)
 files_threshold_per_serotype <- list.files(file.path(data_root), pattern = "*_nn_best_thresholds_per_serotype.csv", recursive = TRUE, full.names = TRUE)
 files_threshold_all <- list.files(file.path(data_root), pattern = "*_nn_best_thresholds_all.csv", recursive = TRUE, full.names = TRUE)
 
+file_training_testing <- file.path(data_root, "nn_training_testing_data.csv")
+df_training_testing <- read_csv(file_training_testing, show_col_types = FALSE)
+training_counts <- df_training_testing %>%
+  filter(dataset == "Training" & benchmark == "GPS benchmark") %>%
+  group_by(nn_serotype) %>%
+  summarise(sum = n())
+
+training_distances <- df_training_testing %>%
+  filter(dataset == "Training" & benchmark == "GPS benchmark") %>%
+  group_by(nn_serotype, is_held_out) %>%
+  summarise(average_nn_dist = mean(knn_distance))
+
 i <- 1
 for (file in files_threshold_per_serotype) {
   df <- read_csv(file, show_col_types = FALSE)
@@ -277,7 +289,7 @@ for (k_val in k_vals) {
     ) +
     labs(
       x = "Serotype",
-      y = "Statistic Value",
+      y = "Statistic value",
       colour = NULL
     ) +
     theme_light() +
@@ -291,9 +303,148 @@ for (k_val in k_vals) {
       legend.position = "right"
     ) + scale_colour_npg()
   p.acc
+  #TODO add number of genomes in training to each point, next to the serotype labels on the y axis
   
   ggsave(file.path(plot_dir, paste0(k_val, "_accuracy_threshold_per_serotype.pdf")), plot=p.acc, width = 7, height = 12)
   ggsave(file.path(plot_dir, paste0(k_val, "_accuracy_threshold_per_serotype.png")), plot=p.acc, width = 7, height = 12)
+  
+  # plot sensitivity, specificity vs sample size
+  plot_data <- merge(k_df, training_counts, by.x = "Serotype", by.y = "nn_serotype")
+  
+  plot_data <- plot_data %>%
+    select(Serotype, sensitivity, specificity, sum) %>%
+    pivot_longer(
+      cols = c(sensitivity, specificity),
+      names_to = "Metric",
+      values_to = "Value"
+    ) %>%
+    mutate(
+      Serotype = factor(Serotype, levels = serotype_order)
+    )
+  
+  plot_data$Metric[plot_data$Metric == "sensitivity"] <- "Sensitivity"
+  plot_data$Metric[plot_data$Metric == "specificity"] <- "Specificity"
+  
+  p.acc.sum <- ggplot(plot_data, aes(x = sum, y = Value, group = Serotype)) +
+    geom_point(
+      size = 3
+    ) +
+    labs(
+      x = "Total training samples",
+      y = "Statistic value",
+      colour = NULL
+    ) +
+    facet_grid(. ~ Metric) +
+    theme_light() +
+    scale_x_log10() +
+    theme(
+      axis.text.x = element_text(size = 10),
+      axis.text.y = element_text(size = 10),
+      legend.title = element_text(face = "bold", size = 14),
+      legend.text = element_text(size = 16),
+      axis.title = element_text(face = "bold", size = 16),
+      legend.position = "right"
+    ) + scale_colour_npg()
+    p.acc.sum
+  ggsave(file.path(plot_dir, paste0(k_val, "_accuracy_vs_training_size_per_serotype.pdf")), plot=p.acc.sum, width = 6, height = 4)
+  ggsave(file.path(plot_dir, paste0(k_val, "_accuracy_vs_training_size_per_serotype.png")), plot=p.acc.sum, width = 6, height = 4)
+    
+  # plot sensitivity, specificity vs average held in/held out distance
+  plot_data <- merge(k_df, training_distances, by.x = "Serotype", by.y = "nn_serotype")
+  
+  plot_data <- plot_data %>%
+    select(Serotype, sensitivity, specificity, average_nn_dist, is_held_out) %>%
+    pivot_longer(
+      cols = c(sensitivity, specificity),
+      names_to = "Metric",
+      values_to = "Value"
+    ) %>%
+    mutate(
+      Serotype = factor(Serotype, levels = serotype_order)
+    )
+  
+  plot_data$Metric[plot_data$Metric == "sensitivity"] <- "Sensitivity"
+  plot_data$Metric[plot_data$Metric == "specificity"] <- "Specificity"
+  plot_data$is_held_out[plot_data$is_held_out == TRUE] <- "Held-out"
+  plot_data$is_held_out[plot_data$is_held_out == FALSE] <- "Held-in"
+  
+  p.acc.dist <- ggplot(plot_data, aes(x = average_nn_dist, y = Value, group = Serotype)) +
+    geom_point(
+      size = 3
+    ) +
+    labs(
+      x = "Average NN distance",
+      y = "Statistic value",
+      colour = NULL
+    ) +
+    facet_grid(is_held_out ~ Metric) +
+    theme_light() +
+    scale_x_log10() +
+    theme(
+      axis.text.x = element_text(size = 10),
+      axis.text.y = element_text(size = 10),
+      legend.title = element_text(face = "bold", size = 14),
+      legend.text = element_text(size = 16),
+      axis.title = element_text(face = "bold", size = 16),
+      legend.position = "right"
+    ) + scale_colour_npg()
+  p.acc.dist
+  
+  ggsave(file.path(plot_dir, paste0(k_val, "_accuracy_vs_distance_per_serotype.pdf")), plot=p.acc.dist, width = 6, height = 6)
+  ggsave(file.path(plot_dir, paste0(k_val, "_accuracy_vs_distance_per_serotype.png")), plot=p.acc.dist, width = 6, height = 6)
+  
+  # plot sensitivity, specificity vs average held in/held out distance ratio
+  training_distances_ratio <- training_distances %>%
+    pivot_wider(
+      names_from = is_held_out,
+      values_from = average_nn_dist,
+      names_prefix = "held_out_"
+    ) %>%
+    mutate(
+      ratio = held_out_TRUE / held_out_FALSE
+    )
+    
+  plot_data <- merge(k_df, training_distances_ratio, by.x = "Serotype", by.y = "nn_serotype")
+  
+  plot_data <- plot_data %>%
+    select(Serotype, sensitivity, specificity, ratio) %>%
+    pivot_longer(
+      cols = c(sensitivity, specificity),
+      names_to = "Metric",
+      values_to = "Value"
+    ) %>%
+    mutate(
+      Serotype = factor(Serotype, levels = serotype_order)
+    )
+  
+  plot_data$Metric[plot_data$Metric == "sensitivity"] <- "Sensitivity"
+  plot_data$Metric[plot_data$Metric == "specificity"] <- "Specificity"
+  
+  p.acc.dist.ratio <- ggplot(plot_data, aes(x = ratio, y = Value, group = Serotype)) +
+    geom_point(
+      size = 3
+    ) +
+    labs(
+      x = "Average NN distance ratio",
+      y = "Statistic value",
+      colour = NULL
+    ) +
+    facet_grid(.~ Metric) +
+    theme_light() +
+    scale_x_log10() +
+    theme(
+      axis.text.x = element_text(size = 10),
+      axis.text.y = element_text(size = 10),
+      legend.title = element_text(face = "bold", size = 14),
+      legend.text = element_text(size = 16),
+      axis.title = element_text(face = "bold", size = 16),
+      legend.position = "right"
+    ) + scale_colour_npg()
+  p.acc.dist.ratio
+  
+  ggsave(file.path(plot_dir, paste0(k_val, "_accuracy_vs_distance_ratio_per_serotype.pdf")), plot=p.acc.dist.ratio, width = 6, height = 4)
+  ggsave(file.path(plot_dir, paste0(k_val, "_accuracy_vs_distance_ratio_size_per_serotype.png")), plot=p.acc.dist.ratio, width = 6, height = 4)
+    
 }
 
 #TODO reclassify ATB data, need to determine which is nearest neighbour and quote accuracy of nearest neighbour assignment per serotype
