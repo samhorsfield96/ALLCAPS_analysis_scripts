@@ -6,6 +6,7 @@ library(purrr)
 library(patchwork)
 
 # ── ALLCAPS-typeable serotypes ─────────────────────────────────────────────────
+data_root <- file.path(dirname(rstudioapi::getSourceEditorContext()$path), "data")
 allcaps_serotypes <- read_csv(
   file.path(data_root, "ALLCAPS_possible_serotypes.csv"),
   show_col_types = FALSE
@@ -78,9 +79,9 @@ process_benchmark_dir <- function(dir_path) {
   
   merged$benchmark <- basename(dir_path)
   
-  # only include samples with sample calls
-  merged <- merged %>%
-    filter(true_serotype %in% allcaps_serotypes)
+  # # only include samples with sample calls
+  # merged <- merged %>%
+  #   filter(true_serotype %in% allcaps_serotypes)
   
   merged
 }
@@ -126,8 +127,6 @@ run_analysis <- function(data) {
   metrics$tool <- tool
   metrics
 }
-
-data_root <- file.path(dirname(rstudioapi::getSourceEditorContext()$path), "data")
 
 benchmark_dirs <- list.dirs(data_root, recursive = FALSE, full.names = TRUE)
 
@@ -216,6 +215,8 @@ make_boxplot <- function(df, bm_label) {
     )
 }
 
+# only us GPS benchmark
+benchmarks <- c("GPS_benchmark")
 plots <- lapply(benchmarks, function(bm) {
   df <- metrics_combined %>% filter(benchmark == bm)
   if (nrow(df) == 0) return(NULL)
@@ -224,18 +225,23 @@ plots <- lapply(benchmarks, function(bm) {
 plots <- Filter(Negate(is.null), plots)
 if (length(plots) == 0) next
 
+# plots <- lapply(benchmarks, function(bm) {
+#   df <- metrics_combined %>% filter(benchmark == bm)
+#   if (nrow(df) == 0) return(NULL)
+#   make_boxplot(df, bm)
+# })
+# plots <- Filter(Negate(is.null), plots)
+# if (length(plots) == 0) next
+
 
 combined_plot <- wrap_plots(plots, ncol = 1) +
-  plot_annotation(tag_levels = "A") & 
+  #plot_annotation(tag_levels = "A") & 
   theme(plot.tag = element_text(size = 24, face = 'bold'))
 out_file <- file.path(plot_dir, paste0("cps_accuracy_ALLCAPS.pdf"))
-ggsave(out_file, combined_plot, width = 10, height = 12)
+ggsave(out_file, combined_plot, width = 10, height = 6)
 out_file <- file.path(plot_dir, paste0("cps_accuracy_ALLCAPS.png"))
-ggsave(out_file, combined_plot, width = 10, height = 12)
+ggsave(out_file, combined_plot, width = 10, height = 6)
 message("Saved: ", out_file)
-
-message("\nDone.")
-
 
 message("\nDone.")
 
