@@ -18,7 +18,7 @@ library(ggpubr)
 library(patchwork)
 
 # set to false if not generating new intermediate files
-WRITE_NEW_INTERMEDIATE <- FALSE
+WRITE_NEW_INTERMEDIATE <- TRUE
 
 data_root <- file.path(dirname(rstudioapi::getSourceEditorContext()$path), "data")
 sample.file.knn <- file.path(data_root, "ATB_query_results_knn.csv")
@@ -92,7 +92,7 @@ if (WRITE_NEW_INTERMEDIATE == TRUE) {
                            "nn_serogroup", "nn_genogroup", "nn_distance", "tool")
 
   # assign novel genomes
-  best_thresholds <- read_csv(file.path(data_root, "1_nn_best_thresholds_per_serotype.csv"))
+  best_thresholds <- read_csv(file.path(data_root, "1_nn_best_thresholds_per_serotype.csv"),  show_col_types = FALSE)
   
   # classify test data
   sample.df <- sample.df %>%
