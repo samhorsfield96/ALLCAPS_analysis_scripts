@@ -31,9 +31,9 @@ process_benchmark_dir <- function(dir_path) {
       true_serotype = trimws(sub("(?i)serogroup\\s*", "", true_serotype, perl = TRUE)),
       true_serotype = sub("^0+([0-9])", "\\1", true_serotype),
       true_serogroup = sub("^([0-9]+).*", "\\1", true_serotype)
-    ) %>% 
-    # remove ambiguous true serotype calls
-    filter(true_serotype %in% allcaps_serotypes)
+    )
+    # # remove ambiguous true serotype calls
+    # filter(true_serotype %in% allcaps_serotypes)
   
   # label training or testing genomes
   ALLCAPS_pred_file <- file.path(dir_path, "allcaps_predictions.csv")
@@ -50,6 +50,9 @@ process_benchmark_dir <- function(dir_path) {
   prokbert_pred_df <- read_csv(prokbert_pred_file, show_col_types = FALSE) %>%
     filter(!grepl("NONCBL#", sample_id, fixed = TRUE)) %>%
     mutate(sample_id = sub("#.*$", "", sample_id)) %>%
+    group_by(sample_id) %>%
+    slice_max(order_by = serotype_confidence, n = 1, with_ties = FALSE) %>%
+    ungroup() %>%
     #mutate(pred_argmax = sub("^0+([0-9])", "\\1", pred_argmax)) %>%
     select(sample_id, ProkBERT = pred_argmax)
 

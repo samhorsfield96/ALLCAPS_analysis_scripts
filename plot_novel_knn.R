@@ -144,12 +144,10 @@ for (file in files_metrics_all) {
 }
 
 # Metrics to plot
-metric_cols <- c("sensitivity", "specificity", "precision", "f1")
+metric_cols <- c("sensitivity", "specificity")
 metric_labels <- c(
   sensitivity = "Sensitivity",
-  specificity = "Specificity",
-  precision   = "Precision",
-  f1          = "F1 Score"
+  specificity = "Specificity"
 )
 
 # per serotype results
@@ -187,7 +185,7 @@ p.df_metrics_per_serotype <- ggplot(df_metrics_per_serotype_long, aes(x = k, y =
   labs(x = "K-value", y = "Score") +
   theme_bw(base_size = 11) +
   theme(
-    axis.text.x  = element_text(angle = 40, hjust = 1, size = 12),
+    axis.text.x  = element_text(size = 12),
     axis.text.y  = element_text(size = 12),
     strip.text   = element_text(face = "bold", size = 14),
     axis.title.y = element_text(size = 16),
@@ -196,8 +194,8 @@ p.df_metrics_per_serotype <- ggplot(df_metrics_per_serotype_long, aes(x = k, y =
     legend.position = "none"
   )
 
-ggsave(file.path(plot_dir, "nn_sensitivity_threshold_per_serotype.pdf"), plot=p.df_metrics_per_serotype, width = 9, height = 11)
-ggsave(file.path(plot_dir, "nn_sensitivity_threshold_per_serotype.png"), plot=p.df_metrics_per_serotype, width = 9, height = 11)
+ggsave(file.path(plot_dir, "nn_sensitivity_threshold_per_serotype.pdf"), plot=p.df_metrics_per_serotype, width = 9, height = 5)
+ggsave(file.path(plot_dir, "nn_sensitivity_threshold_per_serotype.png"), plot=p.df_metrics_per_serotype, width = 9, height = 5)
 
 # per serotype results
 df_metrics_all_long <- df_metrics_all %>%
@@ -235,7 +233,7 @@ p.df_metrics_all <- ggplot(df_metrics_all_long, aes(x = k, y = value, fill = k))
   labs(x = "K-value", y = "Score") +
   theme_bw(base_size = 11) +
   theme(
-    axis.text.x  = element_text(angle = 40, hjust = 1, size = 12),
+    axis.text.x  = element_text(size = 12),
     axis.text.y  = element_text(size = 12),
     strip.text   = element_text(face = "bold", size = 14),
     axis.title.y = element_text(size = 16),
@@ -244,8 +242,8 @@ p.df_metrics_all <- ggplot(df_metrics_all_long, aes(x = k, y = value, fill = k))
     legend.position = "none"
   )
 
-ggsave(file.path(plot_dir, "nn_sensitivity_threshold_all.pdf"), plot=p.df_metrics_all, width = 9, height = 11)
-ggsave(file.path(plot_dir, "nn_sensitivity_threshold_all.png"), plot=p.df_metrics_all, width = 9, height = 11)
+ggsave(file.path(plot_dir, "nn_sensitivity_threshold_all.pdf"), plot=p.df_metrics_all, width = 9, height = 5)
+ggsave(file.path(plot_dir, "nn_sensitivity_threshold_all.png"), plot=p.df_metrics_all, width = 9, height = 5)
 
 # TODO plot sensitivity vs specificity for each LOO serotype scatter for each k-value
 # also include distributions of distances for each serotype, 
@@ -288,7 +286,7 @@ for (k_val in k_vals) {
       breaks = seq(0, 1, 0.1)
     ) +
     labs(
-      x = "Serotype",
+      x = "NN Serotype",
       y = "Statistic value",
       colour = NULL
     ) +
@@ -444,8 +442,7 @@ for (k_val in k_vals) {
   
   ggsave(file.path(plot_dir, paste0(k_val, "_accuracy_vs_distance_ratio_per_serotype.pdf")), plot=p.acc.dist.ratio, width = 6, height = 4)
   ggsave(file.path(plot_dir, paste0(k_val, "_accuracy_vs_distance_ratio_size_per_serotype.png")), plot=p.acc.dist.ratio, width = 6, height = 4)
-    
+  
+  
+  
 }
-
-#TODO reclassify ATB data, need to determine which is nearest neighbour and quote accuracy of nearest neighbour assignment per serotype
-

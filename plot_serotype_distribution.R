@@ -58,11 +58,11 @@ all_results <- Filter(Negate(is.null), all_results)
 
 combined <- bind_rows(all_results)
 
-out_file <- file.path(data_root, "merged_ground_truth.csv")
-write_csv(combined, out_file)
-
 # plot those serotypes that can be generated
 combined <- subset(combined, true_serotype != "NON-CBL")
+
+out_file <- file.path(data_root, "merged_ground_truth.csv")
+write_csv(combined, out_file)
 
 plot_df <- combined %>%
   count(true_serotype, dataset, benchmark, name = "count") %>%
@@ -122,7 +122,6 @@ process_benchmark_dir_contigs <- function(dir_path) {
   # label training or testing genomes
   pred_file <- file.path(dir_path, "allcaps_predictions.csv")
   pred_df <- read_csv(pred_file, show_col_types = FALSE) %>%
-    filter(!grepl("NONCBL#", sample_id, fixed = TRUE)) %>%
     mutate(sample_id = sub("#.*$", "", sample_id)) %>%
     group_by(sample_id) %>%
     slice_max(order_by = serotype_confidence, n = 1, with_ties = FALSE) %>%
