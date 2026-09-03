@@ -29,9 +29,7 @@ process_benchmark_dir <- function(dir_path) {
       true_serotype = trimws(sub("(?i)serogroup\\s*", "", true_serotype, perl = TRUE)),
       true_serotype = sub("^0+([0-9])", "\\1", true_serotype),
       true_serogroup = sub("^([0-9]+).*", "\\1", true_serotype)
-    ) %>% 
-    # remove ambiguous true serotype calls
-    filter(true_serotype %in% allcaps_serotypes)
+    )
   
   # label training or testing genomes
   pred_file <- file.path(dir_path, "allcaps_predictions.csv")
@@ -62,6 +60,9 @@ combined <- bind_rows(all_results)
 
 out_file <- file.path(data_root, "merged_ground_truth.csv")
 write_csv(combined, out_file)
+
+# plot those serotypes that can be generated
+combined <- subset(combined, true_serotype != "NON-CBL")
 
 plot_df <- combined %>%
   count(true_serotype, dataset, benchmark, name = "count") %>%
@@ -96,3 +97,54 @@ p
 out_file <- file.path(data_root, "plots", "serotype_distributions")
 ggsave(paste0(out_file, ".pdf"), p, width = 12, height = 14)
 ggsave(paste0(out_file, ".png"), p, width = 12, height = 14)
+
+# also produce per-contig stats
+
+# Process a single benchmark directory and return a merged data frame
+process_benchmark_dir_contigs <- function(dir_path) {
+  message("Processing: ", dir_path)
+  
+  # --- Ground truth ---
+  gt_file <- file.path(dir_path, "ground_truth.csv")
+  if (!file.exists(gt_file)) {
+    warning("No ground_truth.csv in ", dir_path, " — skipping.")
+    return(NULL)
+  }
+  ground_truth <- read_csv(gt_file, show_col_types = FALSE) %>%
+    select(sample_id, Contig_ID, true_serotype = Serotype) %>%
+    mutate(
+      true_serotype = trimws(sub("(?i)serogroup\\s*", "", true_serotype, perl = TRUE)),
+      true_serotype = sub("^0+([0-9])", "\\1", true_serotype),
+      true_serogroup = sub("^([0-9]+).*", "\\1", true_serotype),
+      sample_id = trimws(sub("(?i)NONCBL#\\s*", "", sample_id, perl = TRUE))
+    )
+  
+  # label training or testing genomes
+  pred_file <- file.path(dir_path, "allcaps_predictions.csv")
+  pred_df <- read_csv(pred_file, show_col_types = FALSE) %>%
+    filter(!grepl("NONCBL#", sample_id, fixed = TRUE)) %>%
+    mutate(sample_id = sub("#.*$", "", sample_id)) %>%
+    group_by(sample_id) %>%
+    slice_max(order_by = serotype_confidence, n = 1, with_ties = FALSE) %>%
+    ungroup() %>%
+    select(sample_id, predicted_serotype = pred_argmax, is_cbl = is_cbl, is_novel_energy = is_novel_energy) %>%
+    mutate(tool = "ALLCAPS")
+  
+  ground_truth$dataset <- ifelse(ground_truth$sample_id %in% pred_df$sample_id, "Testing", "Training")
+  
+  ground_truth$benchmark <- str_replace(basename(dir_path), "_", " ")
+  ground_truth
+}
+
+# --- Main ---
+data_root <- file.path(dirname(rstudioapi::getSourceEditorContext()$path), "data")
+
+benchmark_dirs <- list.dirs(data_root, recursive = FALSE, full.names = TRUE)
+
+all_results <- lapply(benchmark_dirs, process_benchmark_dir_contigs)
+all_results <- Filter(Negate(is.null), all_results)
+
+combined <- bind_rows(all_results)
+
+out_file <- file.path(data_root, "merged_ground_truth_contigs.csv")
+write_csv(combined, out_file)
