@@ -5,6 +5,7 @@ library(tidyr)
 library(purrr)
 library(patchwork)
 library(stringr)
+library(ggplot2)
 
 data_root <- file.path(dirname(rstudioapi::getSourceEditorContext()$path), "data")
 
