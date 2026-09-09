@@ -1,0 +1,32 @@
+SAMEA4832344_serotype_14_novel vs SAMEA5866820_serotype_14
+----------------------------------------------------------
+Query                 Target                Identity  Similarity
+gnl|Bakta|EAFFCI_008  gnl|Bakta|MNOPNO_002  0.96      0.99      
+gnl|Bakta|EAFFCI_009  gnl|Bakta|MNOPNO_003  0.97      0.97      
+gnl|Bakta|EAFFCI_010  gnl|Bakta|MNOPNO_005  0.65      0.66      
+gnl|Bakta|EAFFCI_011  gnl|Bakta|MNOPNO_006  0.40      0.40      
+gnl|Bakta|EAFFCI_012  gnl|Bakta|MNOPNO_007  0.98      0.98      
+gnl|Bakta|EAFFCI_013  gnl|Bakta|MNOPNO_009  0.93      0.93      
+gnl|Bakta|EAFFCI_001  gnl|Bakta|MNOPNO_010  0.91      0.93      
+
+SAMEA4832344_serotype_14_novel vs serotype_14
+---------------------------------------------
+Query                 Target      Identity  Similarity
+gnl|Bakta|EAFFCI_006  SPC14_0018  0.49      0.52      
+
+SAMEA5866820_serotype_14 vs serotype_14
+---------------------------------------
+Query                 Target      Identity  Similarity
+gnl|Bakta|MNOPNO_012  CAI33317.1  0.97      0.99      
+gnl|Bakta|MNOPNO_013  CAI33318.1  0.98      0.99      
+gnl|Bakta|MNOPNO_014  CAI33319.1  0.99      1.00      
+gnl|Bakta|MNOPNO_015  CAI33320.1  0.66      0.66      
+gnl|Bakta|MNOPNO_016  CAI33321.1  1.00      1.00      
+gnl|Bakta|MNOPNO_017  CAI33322.1  1.00      1.00      
+gnl|Bakta|MNOPNO_018  CAI33323.1  1.00      1.00      
+gnl|Bakta|MNOPNO_019  CAI33324.1  1.00      1.00      
+gnl|Bakta|MNOPNO_020  CAI33325.1  1.00      1.00      
+gnl|Bakta|MNOPNO_021  CAI33326.1  0.95      0.95      
+gnl|Bakta|MNOPNO_022  CAI33327.1  0.99      0.99      
+gnl|Bakta|MNOPNO_023  CAI33328.1  0.99      1.00      
+gnl|Bakta|MNOPNO_025  CAI33329.1  0.67      0.67      

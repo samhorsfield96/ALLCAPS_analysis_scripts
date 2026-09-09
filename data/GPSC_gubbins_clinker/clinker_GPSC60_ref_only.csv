@@ -1,0 +1,36 @@
+SAMEA104455783_serotype_16F_novel vs SAMEA110665870_serotype_23F_novel
+----------------------------------------------------------------------
+Query                Target               Identity  Similarity
+gnl|Bakta|DLAAPI_01  gnl|Bakta|LMABNH_01  0.93      0.93      
+
+SAMEA104455783_serotype_16F_novel vs serotype_16F
+-------------------------------------------------
+Query  Target  Identity  Similarity
+
+SAMEA104455783_serotype_16F_novel vs serotype_23F
+-------------------------------------------------
+Query  Target  Identity  Similarity
+
+SAMEA110665870_serotype_23F_novel vs serotype_16F
+-------------------------------------------------
+Query  Target  Identity  Similarity
+
+SAMEA110665870_serotype_23F_novel vs serotype_23F
+-------------------------------------------------
+Query  Target  Identity  Similarity
+
+serotype_16F vs serotype_23F
+----------------------------
+Query        Target       Identity  Similarity
+CAI33453.1   CAI33854.1   0.72      0.74      
+CAI33456.1   CAI33856.1   0.99      0.99      
+CAI33457.1   CAI33857.1   0.88      0.93      
+CAI33458.1   CAI33858.1   0.73      0.89      
+CAI33459.1   CAI33859.1   0.79      0.86      
+CAI33460.1   CAI33860.1   0.72      0.86      
+CAI33461.1   CAI33861.1   0.90      0.92      
+CAI33471.1   CAI33870.1   0.95      0.96      
+CAI33472.1   CAI33871.1   0.99      0.99      
+CAI33473.1   CAI33872.1   0.99      1.00      
+CAI33474.1   CAI33873.1   0.99      0.99      
+SPC16F_0023  SPC23F_0021  0.95      0.95      

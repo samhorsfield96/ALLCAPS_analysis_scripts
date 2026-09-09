@@ -1,0 +1,41 @@
+SAMEA114211878_serotype_38_novel vs SAMEA114521217_serotype_38
+--------------------------------------------------------------
+Query                 Target                Identity  Similarity
+gnl|Bakta|GLIGEG_001  gnl|Bakta|AGBPPP_001  0.97      0.99      
+gnl|Bakta|GLIGEG_002  gnl|Bakta|AGBPPP_002  0.91      0.91      
+gnl|Bakta|GLIGEG_003  gnl|Bakta|AGBPPP_003  1.00      1.00      
+gnl|Bakta|GLIGEG_004  gnl|Bakta|AGBPPP_004  0.97      0.98      
+gnl|Bakta|GLIGEG_005  gnl|Bakta|AGBPPP_005  0.92      0.93      
+gnl|Bakta|GLIGEG_006  gnl|Bakta|AGBPPP_006  1.00      1.00      
+gnl|Bakta|GLIGEG_007  gnl|Bakta|AGBPPP_007  0.96      0.98      
+gnl|Bakta|GLIGEG_008  gnl|Bakta|AGBPPP_008  0.51      0.54      
+gnl|Bakta|GLIGEG_024  gnl|Bakta|AGBPPP_007  0.69      0.70      
+gnl|Bakta|GLIGEG_025  gnl|Bakta|AGBPPP_009  0.44      0.46      
+gnl|Bakta|GLIGEG_029  gnl|Bakta|AGBPPP_001  0.41      0.57      
+gnl|Bakta|GLIGEG_019  gnl|Bakta|AGBPPP_049  0.59      0.73      
+gnl|Bakta|GLIGEG_031  gnl|Bakta|AGBPPP_049  1.00      1.00      
+
+SAMEA114211878_serotype_38_novel vs serotype_38
+-----------------------------------------------
+Query                 Target      Identity  Similarity
+gnl|Bakta|GLIGEG_002  CAI34421.1  0.34      0.42      
+gnl|Bakta|GLIGEG_007  SPC38_0003  0.40      0.41      
+gnl|Bakta|GLIGEG_007  SPC38_0023  0.39      0.40      
+gnl|Bakta|GLIGEG_008  SPC38_0003  0.31      0.35      
+gnl|Bakta|GLIGEG_008  SPC38_0023  0.33      0.36      
+gnl|Bakta|GLIGEG_019  SPC38_0002  0.45      0.62      
+gnl|Bakta|GLIGEG_024  SPC38_0003  0.55      0.57      
+gnl|Bakta|GLIGEG_024  SPC38_0023  0.56      0.57      
+gnl|Bakta|GLIGEG_031  SPC38_0002  0.47      0.61      
+
+SAMEA114521217_serotype_38 vs serotype_38
+-----------------------------------------
+Query                 Target      Identity  Similarity
+gnl|Bakta|AGBPPP_002  CAI34421.1  0.33      0.39      
+gnl|Bakta|AGBPPP_007  SPC38_0003  0.41      0.41      
+gnl|Bakta|AGBPPP_007  SPC38_0023  0.40      0.41      
+gnl|Bakta|AGBPPP_009  SPC38_0003  0.38      0.39      
+gnl|Bakta|AGBPPP_009  SPC38_0023  0.39      0.39      
+gnl|Bakta|AGBPPP_048  CAI34398.1  0.65      0.74      
+gnl|Bakta|AGBPPP_048  SPC38_0027  0.84      0.84      
+gnl|Bakta|AGBPPP_049  SPC38_0002  0.47      0.61      
