@@ -1,0 +1,72 @@
+LOCUS       contig_1                1601 bp    DNA     linear   UNK 09-SEP-2026
+DEFINITION  Streptococcus pneumoniae contig_1, whole genome shotgun sequence.
+ACCESSION   contig_1
+VERSION     contig_1
+KEYWORDS    .
+SOURCE      Streptococcus pneumoniae
+  ORGANISM  Streptococcus pneumoniae
+            .
+COMMENT     Annotated with Bakta
+            Software: v1.12.1
+            Database: v6.0, light
+            DOI: 10.1099/mgen.0.000685
+            URL: github.com/oschwengers/bakta
+            
+            ##Genome Annotation Summary:##
+            Annotation Date                :: 09/09/2026, 08:50:44
+            CDSs                           ::     1
+            tRNAs                          ::     0
+            tmRNAs                         ::     0
+            rRNAs                          ::     0
+            ncRNAs                         ::     0
+            regulatory ncRNAs              ::     0
+            CRISPR Arrays                  ::     0
+            oriCs/oriVs                    ::     0
+            oriTs                          ::     0
+            gaps                           ::     0
+            pseudogenes                    ::     0
+FEATURES             Location/Qualifiers
+     source          1..1601
+                     /mol_type="genomic DNA"
+                     /organism="Streptococcus pneumoniae"
+     gene            complement(448..783)
+                     /locus_tag="LMABNH_01"
+     CDS             complement(448..783)
+                     /product="hypothetical protein"
+                     /locus_tag="LMABNH_01"
+                     /protein_id="gnl|Bakta|LMABNH_01"
+                     /translation="MEDHRQFLPLWIRVELGNLWRCSPGFPYCQEILISKGGLIHFLEI
+                     GVKHRTIIDYLLVRNFANHVNNIHTETTNTFINPEVHHLINFLAKFFIFPVEIRLFFAE
+                     KVEIVLT"
+                     /codon_start=1
+                     /transl_table=11
+                     /inference="ab initio prediction:Prodigal:2.6"
+ORIGIN
+        1 atgcaagaaa aatggtggca taatgccgta gtctatcaag tctatccaaa gagttttatg
+       61 gatagtaatg gagatggagt tggtgatttg ccaggtatta ccagtaagtt ggactatcta
+      121 gctaagctag gaatcacagc gatttggctt tctcccgttt atgacagccc tatggatgat
+      181 aatggctacg atattgctga ttatcaagcg attgcaacga tttttggaac catggaggat
+      241 atggatcaac tgattgcgga agctaagaag cgtgacattc gtatcatcat ggacttggtg
+      301 gttaatcata cctcagatga acatgcttgg tttgtcgaag cctgtgaaaa tactgacagc
+      361 cctgagcgag actactatat ctggcgcgat gaacccaatg acctagattc tatctttagt
+      421 gggtctgctt gggaatacga tgaaaagtca ggtcaatact atctccactt tttcagcaaa
+      481 aaacagccgg atctcaactg ggaaaatgaa aaacttcgcc agaaaattta tgagatgatg
+      541 aacttctgga ttgataaagg tattggtggt ttccgtatgg atgttattga catgattggc
+      601 aaaattcctg acgagaaggt agtcaataat ggtcctatgc ttcaccccta tctcaaggaa
+      661 atgaatcagg ccacctttgg agataagaat ctcttgacag taggggaaac ctggggagca
+      721 acgccagaga ttgccaagct ctactctgat ccaaaggggc aagaattgtc tatggtcttc
+      781 cattttgaac atatcggtct tcagtatcag gaaggtcagc ctaagtggca ctatcaaaaa
+      841 gaactgaata ttcctaagtt aaaagaaatt ttcaacaaat ggcagacaga gttaggagtt
+      901 gaggacggct ggaattcact cttttggaac aatcatgacc tccctcgtat cgtctcaatc
+      961 tggggaaatg accaagaata ccgagaaaaa tctgccaaag cctttgcaat cttgcttcat
+     1021 ctcatgagag ggactcctta tatctaccaa ggtgaggaaa ttgggatgac caactatccg
+     1081 tttggaacac tgaatcaagt agaagatatt gaatccctca actatgcgcg tgaggctctt
+     1141 gaaaaaggcg ttccgatgga agaaatcatg gacagtatcc gtgtcattgg acgtgacaat
+     1201 gcccgtaccc ccatgcaatg ggataagagc aaaaacgctg gtttctcaac tggtcaacct
+     1261 tggttggcag tgaatccaaa ccatcaagaa atcaacgttc aagaagcgct ggcaaatcca
+     1321 gattctattt tctataccta tcagaagttg gttcaaatcc gtaaggagaa tagctggcta
+     1381 attcgatctg attttgagct cttggaaaca gctgacaagg tttttgccta tatccgtaag
+     1441 gacggtgacc gtcgcttcct agtcgtcgct aacttgtcca atgaagaaca agacttgatc
+     1501 gtagaaggaa acgtcaaatc ggtcttgatt gaaaacactg cggctcaaga agtctttgaa
+     1561 aaacaaattt tagctccgtg ggatgctttc tgtgtggaat t
+//

@@ -1,0 +1,72 @@
+LOCUS       contig_1                1601 bp    DNA     linear   UNK 09-SEP-2026
+DEFINITION  Streptococcus pneumoniae contig_1, whole genome shotgun sequence.
+ACCESSION   contig_1
+VERSION     contig_1
+KEYWORDS    .
+SOURCE      Streptococcus pneumoniae
+  ORGANISM  Streptococcus pneumoniae
+            .
+COMMENT     Annotated with Bakta
+            Software: v1.12.1
+            Database: v6.0, light
+            DOI: 10.1099/mgen.0.000685
+            URL: github.com/oschwengers/bakta
+            
+            ##Genome Annotation Summary:##
+            Annotation Date                :: 09/09/2026, 08:50:34
+            CDSs                           ::     1
+            tRNAs                          ::     0
+            tmRNAs                         ::     0
+            rRNAs                          ::     0
+            ncRNAs                         ::     0
+            regulatory ncRNAs              ::     0
+            CRISPR Arrays                  ::     0
+            oriCs/oriVs                    ::     0
+            oriTs                          ::     0
+            gaps                           ::     0
+            pseudogenes                    ::     0
+FEATURES             Location/Qualifiers
+     source          1..1601
+                     /mol_type="genomic DNA"
+                     /organism="Streptococcus pneumoniae"
+     gene            complement(448..792)
+                     /locus_tag="DLAAPI_01"
+     CDS             complement(448..792)
+                     /product="hypothetical protein"
+                     /locus_tag="DLAAPI_01"
+                     /protein_id="gnl|Bakta|DLAAPI_01"
+                     /translation="MFKLEDHRQFLPLWIRVELGNLWRCSPSLPYCQEILISKGRLIHF
+                     LEIGMEHRTIIDYLLVRNFANHVNNIHTETTNTFINPEVHHLINFLAKFFIFPVEIRLF
+                     FAEKVEIVLT"
+                     /codon_start=1
+                     /transl_table=11
+                     /inference="ab initio prediction:Prodigal:2.6"
+ORIGIN
+        1 atgcaagaaa aatggtggca caatgccgta gtctatcaag tctatccaaa gagttttatg
+       61 gatagtaatg gagatggagt tggtgatttg ccaggtatta ccagtaagtt ggactatcta
+      121 gccaagctag gaatcacagc aatttggctt tctcccgttt atgacagccc tatggatgat
+      181 aatggctatg atattgctga ttatcaagcg attgcggcta tttttggaac catggaggac
+      241 atggatcagc tgattgcaga agctaagaag cgtgacattc gtatcatcat ggacttggtg
+      301 gttaatcata cctcagatga acatgcttgg tttgtcgaag cctgtgaaaa tactgacagc
+      361 cctgagcgag actactatat ctggcgcgat gaacccaatg acctagattc tatctttagt
+      421 gggtctgctt gggaatacga tgaaaagtca ggtcaatact atctccactt tttcagcaaa
+      481 aaacagccgg atctcaactg ggaaaatgaa aaacttcgcc agaaaattta tgagatgatg
+      541 aacttctgga ttgataaagg tattggtggt ttccgtatgg atgttattga catgattggc
+      601 aaaattcctg acgagaaggt agtcaataat ggtcctatgc tccatcccta tctcaaggaa
+      661 atgaatcagg cgacctttgg agataaggat ctcttgacag taggggagac ttggggagca
+      721 acgccagaga ttgccaagct ctactctgat ccaaaggggc aagaattgtc tatggtcttc
+      781 cagtttgaac atatcggtct tcagtatcag gaaggtcagc ctaaatggca ctatcaaaaa
+      841 gagctgaata tcgctaagtt aaaagaaatc ttcaacaaat ggcagacaga gttaggagtt
+      901 gaggacggct ggaattccct cttctggaac aaccatgacc tccctcgtat tgtctcaatc
+      961 tggggaaatg accaagaata ccgcgaaaaa tctgccaaag cctttgcaat cttgcttcat
+     1021 cttatgagag gaactcctta tatctaccaa ggtgaggaga ttgggatgac caactatccg
+     1081 tttgaaacac tggatcaagt agaagatatt gaatctctca actatgcgcg tgaggctctt
+     1141 gaaaaaggtg ttccgattga agaaatcatg gacagtatcc gtgttattgg acgtgacaat
+     1201 gcccgtaccc ctatgcaatg ggacgagagc aaaaacgctg gtttctcaac aggtcaacct
+     1261 tggttggcgg ttaatccaaa ttacgagatg atcaatgtcc aagaagcgct ggcaaatcca
+     1321 gattctattt tctataccta tcagaaactg gtccaaattc gcaaggagaa tagctggcta
+     1381 gttcgagctg actttgaatt gcttgatacg gctgataagg tctttgctta tatacgtaag
+     1441 gatggcgacc gtcgcttcct agtcgtggct aatttatcca atgacaaaca aaacttttca
+     1501 gtagatggaa aagttagatc tgtcttgatt gaaaacactg cggctaaaga agtacttgaa
+     1561 aaacaggtct tggctccatg ggatgctttc tgtgtggaat t
+//
