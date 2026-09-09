@@ -1,4 +1,4 @@
-predicted_serotype,tip,predicted_serogroup,is_cbl,nn_serotype,nn_serogroup,nn_genogroup,nn_distance,tool,threshold,is_novel_serogroup,GPSC,final_serotype_prediction,final_serogroup_prediction,Name,Genogroup,SeroBA_Unknown,SeroBA_Type
+predicted_serotype,tip,predicted_serogroup,is_cps,nn_serotype,nn_serogroup,nn_genogroup,nn_distance,tool,threshold,is_novel_serogroup,GPSC,final_serotype_prediction,final_serogroup_prediction,Name,Genogroup,SeroBA_Unknown,SeroBA_Type
 1,SAMEA1012521,1,TRUE,1,1,1,7.80867022640575e-05,ALLCAPS,0.0226517007066828,FALSE,2,1,1,1,1,1,ref
 1,SAMEA1012549,1,TRUE,1,1,1,7.80867022640575e-05,ALLCAPS,0.0226517007066828,FALSE,2,1,1,1,1,1,ref
 1,SAMEA1012600,1,TRUE,1,1,1,0.00026292577189757,ALLCAPS,0.0226517007066828,FALSE,2,1,1,1,1,1,ref
