@@ -1,0 +1,250 @@
+ERR1799719_serotype_14_novel_NN vs ERR2668146_serotype_14_NN
+------------------------------------------------------------
+Query                 Target                Identity  Similarity
+gnl|Bakta|NILAGA_001  gnl|Bakta|JEAJIB_001  0.97      0.99      
+gnl|Bakta|NILAGA_004  gnl|Bakta|JEAJIB_003  0.97      0.99      
+gnl|Bakta|NILAGA_005  gnl|Bakta|JEAJIB_004  0.99      0.99      
+gnl|Bakta|NILAGA_006  gnl|Bakta|JEAJIB_005  0.99      1.00      
+gnl|Bakta|NILAGA_007  gnl|Bakta|JEAJIB_006  0.98      0.99      
+gnl|Bakta|NILAGA_008  gnl|Bakta|JEAJIB_007  1.00      1.00      
+gnl|Bakta|NILAGA_009  gnl|Bakta|JEAJIB_008  1.00      1.00      
+gnl|Bakta|NILAGA_010  gnl|Bakta|JEAJIB_009  1.00      1.00      
+gnl|Bakta|NILAGA_011  gnl|Bakta|JEAJIB_010  1.00      1.00      
+gnl|Bakta|NILAGA_012  gnl|Bakta|JEAJIB_011  1.00      1.00      
+gnl|Bakta|NILAGA_013  gnl|Bakta|JEAJIB_012  0.99      0.99      
+gnl|Bakta|NILAGA_014  gnl|Bakta|JEAJIB_013  0.97      0.97      
+gnl|Bakta|NILAGA_015  gnl|Bakta|JEAJIB_014  0.78      0.78      
+gnl|Bakta|NILAGA_017  gnl|Bakta|JEAJIB_015  0.69      0.72      
+gnl|Bakta|NILAGA_018  gnl|Bakta|JEAJIB_016  0.55      0.55      
+gnl|Bakta|NILAGA_021  gnl|Bakta|JEAJIB_018  0.72      0.76      
+gnl|Bakta|NILAGA_022  gnl|Bakta|JEAJIB_019  0.86      0.86      
+gnl|Bakta|NILAGA_023  gnl|Bakta|JEAJIB_020  0.49      0.50      
+gnl|Bakta|NILAGA_024  gnl|Bakta|JEAJIB_021  0.47      0.47      
+gnl|Bakta|NILAGA_025  gnl|Bakta|JEAJIB_023  1.00      1.00      
+gnl|Bakta|NILAGA_026  gnl|Bakta|JEAJIB_024  0.96      0.98      
+gnl|Bakta|NILAGA_027  gnl|Bakta|JEAJIB_025  1.00      1.00      
+
+ERR1799719_serotype_14_novel_NN vs ERR2681042_serotype_14_NN
+------------------------------------------------------------
+Query                 Target                Identity  Similarity
+gnl|Bakta|NILAGA_001  gnl|Bakta|IAMCMP_002  0.97      0.99      
+gnl|Bakta|NILAGA_004  gnl|Bakta|IAMCMP_003  0.97      0.99      
+gnl|Bakta|NILAGA_005  gnl|Bakta|IAMCMP_004  0.99      0.99      
+gnl|Bakta|NILAGA_006  gnl|Bakta|IAMCMP_005  0.99      1.00      
+gnl|Bakta|NILAGA_007  gnl|Bakta|IAMCMP_006  0.98      0.99      
+gnl|Bakta|NILAGA_008  gnl|Bakta|IAMCMP_007  1.00      1.00      
+gnl|Bakta|NILAGA_009  gnl|Bakta|IAMCMP_008  1.00      1.00      
+gnl|Bakta|NILAGA_010  gnl|Bakta|IAMCMP_009  1.00      1.00      
+gnl|Bakta|NILAGA_011  gnl|Bakta|IAMCMP_010  1.00      1.00      
+gnl|Bakta|NILAGA_012  gnl|Bakta|IAMCMP_011  1.00      1.00      
+gnl|Bakta|NILAGA_013  gnl|Bakta|IAMCMP_012  0.94      0.95      
+gnl|Bakta|NILAGA_014  gnl|Bakta|IAMCMP_013  0.97      0.97      
+gnl|Bakta|NILAGA_015  gnl|Bakta|IAMCMP_014  1.00      1.00      
+gnl|Bakta|NILAGA_018  gnl|Bakta|IAMCMP_015  0.37      0.37      
+gnl|Bakta|NILAGA_027  gnl|Bakta|IAMCMP_001  0.92      0.93      
+
+ERR1799719_serotype_14_novel_NN vs SAMEA4832344_serotype_14_novel
+-----------------------------------------------------------------
+Query                 Target                Identity  Similarity
+gnl|Bakta|NILAGA_001  gnl|Bakta|EAFFCI_001  0.93      0.93      
+gnl|Bakta|NILAGA_021  gnl|Bakta|EAFFCI_008  0.73      0.77      
+gnl|Bakta|NILAGA_022  gnl|Bakta|EAFFCI_009  0.87      0.87      
+gnl|Bakta|NILAGA_024  gnl|Bakta|EAFFCI_010  0.63      0.64      
+gnl|Bakta|NILAGA_025  gnl|Bakta|EAFFCI_012  0.98      0.98      
+gnl|Bakta|NILAGA_027  gnl|Bakta|EAFFCI_013  0.92      0.93      
+
+ERR1799719_serotype_14_novel_NN vs SAMEA5866820_serotype_14
+-----------------------------------------------------------
+Query                 Target                Identity  Similarity
+gnl|Bakta|NILAGA_001  gnl|Bakta|MNOPNO_010  0.97      0.99      
+gnl|Bakta|NILAGA_004  gnl|Bakta|MNOPNO_012  0.97      0.99      
+gnl|Bakta|NILAGA_005  gnl|Bakta|MNOPNO_013  0.99      0.99      
+gnl|Bakta|NILAGA_006  gnl|Bakta|MNOPNO_014  0.99      1.00      
+gnl|Bakta|NILAGA_007  gnl|Bakta|MNOPNO_015  0.66      0.66      
+gnl|Bakta|NILAGA_008  gnl|Bakta|MNOPNO_016  1.00      1.00      
+gnl|Bakta|NILAGA_009  gnl|Bakta|MNOPNO_017  1.00      1.00      
+gnl|Bakta|NILAGA_010  gnl|Bakta|MNOPNO_018  1.00      1.00      
+gnl|Bakta|NILAGA_011  gnl|Bakta|MNOPNO_019  1.00      1.00      
+gnl|Bakta|NILAGA_012  gnl|Bakta|MNOPNO_020  1.00      1.00      
+gnl|Bakta|NILAGA_013  gnl|Bakta|MNOPNO_021  0.99      0.99      
+gnl|Bakta|NILAGA_014  gnl|Bakta|MNOPNO_022  0.97      0.97      
+gnl|Bakta|NILAGA_015  gnl|Bakta|MNOPNO_023  1.00      1.00      
+gnl|Bakta|NILAGA_017  gnl|Bakta|MNOPNO_024  0.69      0.72      
+gnl|Bakta|NILAGA_018  gnl|Bakta|MNOPNO_025  0.55      0.55      
+gnl|Bakta|NILAGA_021  gnl|Bakta|MNOPNO_002  0.72      0.76      
+gnl|Bakta|NILAGA_022  gnl|Bakta|MNOPNO_003  0.86      0.86      
+gnl|Bakta|NILAGA_023  gnl|Bakta|MNOPNO_004  0.74      0.75      
+gnl|Bakta|NILAGA_024  gnl|Bakta|MNOPNO_005  0.47      0.47      
+gnl|Bakta|NILAGA_025  gnl|Bakta|MNOPNO_007  1.00      1.00      
+gnl|Bakta|NILAGA_026  gnl|Bakta|MNOPNO_008  0.96      0.98      
+gnl|Bakta|NILAGA_027  gnl|Bakta|MNOPNO_009  1.00      1.00      
+
+ERR1799719_serotype_14_novel_NN vs serotype_14
+----------------------------------------------
+Query                 Target      Identity  Similarity
+gnl|Bakta|NILAGA_002  SPC14_0003  0.36      0.38      
+gnl|Bakta|NILAGA_004  CAI33317.1  1.00      1.00      
+gnl|Bakta|NILAGA_005  CAI33318.1  1.00      1.00      
+gnl|Bakta|NILAGA_006  CAI33319.1  1.00      1.00      
+gnl|Bakta|NILAGA_007  CAI33320.1  1.00      1.00      
+gnl|Bakta|NILAGA_008  CAI33321.1  1.00      1.00      
+gnl|Bakta|NILAGA_009  CAI33322.1  1.00      1.00      
+gnl|Bakta|NILAGA_010  CAI33323.1  1.00      1.00      
+gnl|Bakta|NILAGA_011  CAI33324.1  1.00      1.00      
+gnl|Bakta|NILAGA_012  CAI33325.1  1.00      1.00      
+gnl|Bakta|NILAGA_013  CAI33326.1  0.94      0.95      
+gnl|Bakta|NILAGA_014  CAI33327.1  0.97      0.97      
+gnl|Bakta|NILAGA_015  CAI33328.1  0.99      1.00      
+gnl|Bakta|NILAGA_018  CAI33329.1  0.36      0.37      
+gnl|Bakta|NILAGA_020  CAI33330.1  0.32      0.35      
+
+ERR2668146_serotype_14_NN vs ERR2681042_serotype_14_NN
+------------------------------------------------------
+Query                 Target                Identity  Similarity
+gnl|Bakta|JEAJIB_001  gnl|Bakta|IAMCMP_002  0.99      1.00      
+gnl|Bakta|JEAJIB_003  gnl|Bakta|IAMCMP_003  1.00      1.00      
+gnl|Bakta|JEAJIB_004  gnl|Bakta|IAMCMP_004  1.00      1.00      
+gnl|Bakta|JEAJIB_005  gnl|Bakta|IAMCMP_005  1.00      1.00      
+gnl|Bakta|JEAJIB_006  gnl|Bakta|IAMCMP_006  1.00      1.00      
+gnl|Bakta|JEAJIB_007  gnl|Bakta|IAMCMP_007  1.00      1.00      
+gnl|Bakta|JEAJIB_008  gnl|Bakta|IAMCMP_008  1.00      1.00      
+gnl|Bakta|JEAJIB_009  gnl|Bakta|IAMCMP_009  1.00      1.00      
+gnl|Bakta|JEAJIB_010  gnl|Bakta|IAMCMP_010  1.00      1.00      
+gnl|Bakta|JEAJIB_011  gnl|Bakta|IAMCMP_011  1.00      1.00      
+gnl|Bakta|JEAJIB_012  gnl|Bakta|IAMCMP_012  0.95      0.95      
+gnl|Bakta|JEAJIB_013  gnl|Bakta|IAMCMP_013  1.00      1.00      
+gnl|Bakta|JEAJIB_014  gnl|Bakta|IAMCMP_014  0.78      0.78      
+gnl|Bakta|JEAJIB_016  gnl|Bakta|IAMCMP_015  0.67      0.67      
+gnl|Bakta|JEAJIB_025  gnl|Bakta|IAMCMP_001  0.93      0.93      
+
+ERR2668146_serotype_14_NN vs SAMEA4832344_serotype_14_novel
+-----------------------------------------------------------
+Query                 Target                Identity  Similarity
+gnl|Bakta|JEAJIB_001  gnl|Bakta|EAFFCI_001  0.91      0.93      
+gnl|Bakta|JEAJIB_018  gnl|Bakta|EAFFCI_008  0.96      0.99      
+gnl|Bakta|JEAJIB_019  gnl|Bakta|EAFFCI_009  0.97      0.97      
+gnl|Bakta|JEAJIB_021  gnl|Bakta|EAFFCI_010  0.65      0.66      
+gnl|Bakta|JEAJIB_022  gnl|Bakta|EAFFCI_011  0.40      0.40      
+gnl|Bakta|JEAJIB_023  gnl|Bakta|EAFFCI_012  0.98      0.98      
+gnl|Bakta|JEAJIB_025  gnl|Bakta|EAFFCI_013  0.93      0.93      
+
+ERR2668146_serotype_14_NN vs SAMEA5866820_serotype_14
+-----------------------------------------------------
+Query                 Target                Identity  Similarity
+gnl|Bakta|JEAJIB_001  gnl|Bakta|MNOPNO_010  0.99      1.00      
+gnl|Bakta|JEAJIB_002  gnl|Bakta|MNOPNO_011  1.00      1.00      
+gnl|Bakta|JEAJIB_003  gnl|Bakta|MNOPNO_012  1.00      1.00      
+gnl|Bakta|JEAJIB_004  gnl|Bakta|MNOPNO_013  1.00      1.00      
+gnl|Bakta|JEAJIB_005  gnl|Bakta|MNOPNO_014  1.00      1.00      
+gnl|Bakta|JEAJIB_006  gnl|Bakta|MNOPNO_015  0.66      0.66      
+gnl|Bakta|JEAJIB_007  gnl|Bakta|MNOPNO_016  1.00      1.00      
+gnl|Bakta|JEAJIB_008  gnl|Bakta|MNOPNO_017  1.00      1.00      
+gnl|Bakta|JEAJIB_009  gnl|Bakta|MNOPNO_018  1.00      1.00      
+gnl|Bakta|JEAJIB_010  gnl|Bakta|MNOPNO_019  1.00      1.00      
+gnl|Bakta|JEAJIB_011  gnl|Bakta|MNOPNO_020  1.00      1.00      
+gnl|Bakta|JEAJIB_012  gnl|Bakta|MNOPNO_021  1.00      1.00      
+gnl|Bakta|JEAJIB_013  gnl|Bakta|MNOPNO_022  1.00      1.00      
+gnl|Bakta|JEAJIB_014  gnl|Bakta|MNOPNO_023  0.78      0.78      
+gnl|Bakta|JEAJIB_015  gnl|Bakta|MNOPNO_024  1.00      1.00      
+gnl|Bakta|JEAJIB_016  gnl|Bakta|MNOPNO_025  1.00      1.00      
+gnl|Bakta|JEAJIB_017  gnl|Bakta|MNOPNO_001  1.00      1.00      
+gnl|Bakta|JEAJIB_018  gnl|Bakta|MNOPNO_002  1.00      1.00      
+gnl|Bakta|JEAJIB_019  gnl|Bakta|MNOPNO_003  1.00      1.00      
+gnl|Bakta|JEAJIB_020  gnl|Bakta|MNOPNO_004  0.71      0.71      
+gnl|Bakta|JEAJIB_021  gnl|Bakta|MNOPNO_005  1.00      1.00      
+gnl|Bakta|JEAJIB_022  gnl|Bakta|MNOPNO_006  1.00      1.00      
+gnl|Bakta|JEAJIB_023  gnl|Bakta|MNOPNO_007  1.00      1.00      
+gnl|Bakta|JEAJIB_024  gnl|Bakta|MNOPNO_008  1.00      1.00      
+gnl|Bakta|JEAJIB_025  gnl|Bakta|MNOPNO_009  1.00      1.00      
+
+ERR2668146_serotype_14_NN vs serotype_14
+----------------------------------------
+Query                 Target      Identity  Similarity
+gnl|Bakta|JEAJIB_003  CAI33317.1  0.97      0.99      
+gnl|Bakta|JEAJIB_004  CAI33318.1  0.98      0.99      
+gnl|Bakta|JEAJIB_005  CAI33319.1  0.99      1.00      
+gnl|Bakta|JEAJIB_006  CAI33320.1  0.98      0.99      
+gnl|Bakta|JEAJIB_007  CAI33321.1  1.00      1.00      
+gnl|Bakta|JEAJIB_008  CAI33322.1  1.00      1.00      
+gnl|Bakta|JEAJIB_009  CAI33323.1  1.00      1.00      
+gnl|Bakta|JEAJIB_010  CAI33324.1  1.00      1.00      
+gnl|Bakta|JEAJIB_011  CAI33325.1  1.00      1.00      
+gnl|Bakta|JEAJIB_012  CAI33326.1  0.95      0.95      
+gnl|Bakta|JEAJIB_013  CAI33327.1  0.99      0.99      
+gnl|Bakta|JEAJIB_014  CAI33328.1  0.77      0.78      
+gnl|Bakta|JEAJIB_016  CAI33329.1  0.67      0.67      
+
+ERR2681042_serotype_14_NN vs SAMEA4832344_serotype_14_novel
+-----------------------------------------------------------
+Query                 Target                Identity  Similarity
+gnl|Bakta|IAMCMP_001  gnl|Bakta|EAFFCI_013  1.00      1.00      
+gnl|Bakta|IAMCMP_002  gnl|Bakta|EAFFCI_001  0.91      0.93      
+
+ERR2681042_serotype_14_NN vs SAMEA5866820_serotype_14
+-----------------------------------------------------
+Query                 Target                Identity  Similarity
+gnl|Bakta|IAMCMP_001  gnl|Bakta|MNOPNO_009  0.93      0.93      
+gnl|Bakta|IAMCMP_002  gnl|Bakta|MNOPNO_010  1.00      1.00      
+gnl|Bakta|IAMCMP_003  gnl|Bakta|MNOPNO_012  1.00      1.00      
+gnl|Bakta|IAMCMP_004  gnl|Bakta|MNOPNO_013  1.00      1.00      
+gnl|Bakta|IAMCMP_005  gnl|Bakta|MNOPNO_014  1.00      1.00      
+gnl|Bakta|IAMCMP_006  gnl|Bakta|MNOPNO_015  0.66      0.66      
+gnl|Bakta|IAMCMP_007  gnl|Bakta|MNOPNO_016  1.00      1.00      
+gnl|Bakta|IAMCMP_008  gnl|Bakta|MNOPNO_017  1.00      1.00      
+gnl|Bakta|IAMCMP_009  gnl|Bakta|MNOPNO_018  1.00      1.00      
+gnl|Bakta|IAMCMP_010  gnl|Bakta|MNOPNO_019  1.00      1.00      
+gnl|Bakta|IAMCMP_011  gnl|Bakta|MNOPNO_020  1.00      1.00      
+gnl|Bakta|IAMCMP_012  gnl|Bakta|MNOPNO_021  0.95      0.95      
+gnl|Bakta|IAMCMP_013  gnl|Bakta|MNOPNO_022  1.00      1.00      
+gnl|Bakta|IAMCMP_014  gnl|Bakta|MNOPNO_023  1.00      1.00      
+gnl|Bakta|IAMCMP_015  gnl|Bakta|MNOPNO_025  0.67      0.67      
+
+ERR2681042_serotype_14_NN vs serotype_14
+----------------------------------------
+Query                 Target      Identity  Similarity
+gnl|Bakta|IAMCMP_003  CAI33317.1  0.97      0.99      
+gnl|Bakta|IAMCMP_004  CAI33318.1  0.98      0.99      
+gnl|Bakta|IAMCMP_005  CAI33319.1  0.99      1.00      
+gnl|Bakta|IAMCMP_006  CAI33320.1  0.98      0.99      
+gnl|Bakta|IAMCMP_007  CAI33321.1  1.00      1.00      
+gnl|Bakta|IAMCMP_008  CAI33322.1  1.00      1.00      
+gnl|Bakta|IAMCMP_009  CAI33323.1  1.00      1.00      
+gnl|Bakta|IAMCMP_010  CAI33324.1  1.00      1.00      
+gnl|Bakta|IAMCMP_011  CAI33325.1  1.00      1.00      
+gnl|Bakta|IAMCMP_012  CAI33326.1  1.00      1.00      
+gnl|Bakta|IAMCMP_013  CAI33327.1  0.99      0.99      
+gnl|Bakta|IAMCMP_014  CAI33328.1  0.99      1.00      
+gnl|Bakta|IAMCMP_015  CAI33329.1  0.99      1.00      
+
+SAMEA4832344_serotype_14_novel vs SAMEA5866820_serotype_14
+----------------------------------------------------------
+Query                 Target                Identity  Similarity
+gnl|Bakta|EAFFCI_008  gnl|Bakta|MNOPNO_002  0.96      0.99      
+gnl|Bakta|EAFFCI_009  gnl|Bakta|MNOPNO_003  0.97      0.97      
+gnl|Bakta|EAFFCI_010  gnl|Bakta|MNOPNO_005  0.65      0.66      
+gnl|Bakta|EAFFCI_011  gnl|Bakta|MNOPNO_006  0.40      0.40      
+gnl|Bakta|EAFFCI_012  gnl|Bakta|MNOPNO_007  0.98      0.98      
+gnl|Bakta|EAFFCI_013  gnl|Bakta|MNOPNO_009  0.93      0.93      
+gnl|Bakta|EAFFCI_001  gnl|Bakta|MNOPNO_010  0.91      0.93      
+
+SAMEA4832344_serotype_14_novel vs serotype_14
+---------------------------------------------
+Query                 Target      Identity  Similarity
+gnl|Bakta|EAFFCI_006  SPC14_0018  0.49      0.52      
+
+SAMEA5866820_serotype_14 vs serotype_14
+---------------------------------------
+Query                 Target      Identity  Similarity
+gnl|Bakta|MNOPNO_012  CAI33317.1  0.97      0.99      
+gnl|Bakta|MNOPNO_013  CAI33318.1  0.98      0.99      
+gnl|Bakta|MNOPNO_014  CAI33319.1  0.99      1.00      
+gnl|Bakta|MNOPNO_015  CAI33320.1  0.66      0.66      
+gnl|Bakta|MNOPNO_016  CAI33321.1  1.00      1.00      
+gnl|Bakta|MNOPNO_017  CAI33322.1  1.00      1.00      
+gnl|Bakta|MNOPNO_018  CAI33323.1  1.00      1.00      
+gnl|Bakta|MNOPNO_019  CAI33324.1  1.00      1.00      
+gnl|Bakta|MNOPNO_020  CAI33325.1  1.00      1.00      
+gnl|Bakta|MNOPNO_021  CAI33326.1  0.95      0.95      
+gnl|Bakta|MNOPNO_022  CAI33327.1  0.99      0.99      
+gnl|Bakta|MNOPNO_023  CAI33328.1  0.99      1.00      
+gnl|Bakta|MNOPNO_025  CAI33329.1  0.67      0.67      

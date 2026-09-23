@@ -1,0 +1,228 @@
+ERR2667210_serotype_38_NN vs ERR3303233_serotype_38_novel_NN
+------------------------------------------------------------
+Query                Target                Identity  Similarity
+gnl|Bakta|IPPBFM_01  gnl|Bakta|ABMNEN_002  0.97      0.99      
+gnl|Bakta|IPPBFM_02  gnl|Bakta|ABMNEN_003  0.91      0.91      
+gnl|Bakta|IPPBFM_03  gnl|Bakta|ABMNEN_004  1.00      1.00      
+gnl|Bakta|IPPBFM_04  gnl|Bakta|ABMNEN_005  0.97      0.98      
+gnl|Bakta|IPPBFM_05  gnl|Bakta|ABMNEN_006  0.99      1.00      
+gnl|Bakta|IPPBFM_06  gnl|Bakta|ABMNEN_007  1.00      1.00      
+gnl|Bakta|IPPBFM_08  gnl|Bakta|ABMNEN_001  1.00      1.00      
+
+ERR2667210_serotype_38_NN vs ERR632902_serotype_38_novel_NN
+-----------------------------------------------------------
+Query                Target                Identity  Similarity
+gnl|Bakta|IPPBFM_01  gnl|Bakta|OFEDLN_031  0.98      0.99      
+gnl|Bakta|IPPBFM_08  gnl|Bakta|OFEDLN_030  0.98      0.99      
+
+ERR2667210_serotype_38_NN vs ERR925028_serotype_38_NN
+-----------------------------------------------------
+Query                Target                Identity  Similarity
+gnl|Bakta|IPPBFM_01  gnl|Bakta|GMKEGH_001  1.00      1.00      
+gnl|Bakta|IPPBFM_02  gnl|Bakta|GMKEGH_002  1.00      1.00      
+gnl|Bakta|IPPBFM_03  gnl|Bakta|GMKEGH_003  1.00      1.00      
+gnl|Bakta|IPPBFM_04  gnl|Bakta|GMKEGH_004  1.00      1.00      
+gnl|Bakta|IPPBFM_05  gnl|Bakta|GMKEGH_005  1.00      1.00      
+gnl|Bakta|IPPBFM_06  gnl|Bakta|GMKEGH_006  1.00      1.00      
+gnl|Bakta|IPPBFM_07  gnl|Bakta|GMKEGH_012  1.00      1.00      
+gnl|Bakta|IPPBFM_08  gnl|Bakta|GMKEGH_013  1.00      1.00      
+
+ERR2667210_serotype_38_NN vs SAMEA114211878_serotype_38_novel
+-------------------------------------------------------------
+Query                Target                Identity  Similarity
+gnl|Bakta|IPPBFM_01  gnl|Bakta|GLIGEG_001  0.97      0.99      
+gnl|Bakta|IPPBFM_01  gnl|Bakta|GLIGEG_029  0.41      0.57      
+gnl|Bakta|IPPBFM_02  gnl|Bakta|GLIGEG_002  0.91      0.91      
+gnl|Bakta|IPPBFM_03  gnl|Bakta|GLIGEG_003  0.92      0.92      
+gnl|Bakta|IPPBFM_04  gnl|Bakta|GLIGEG_004  0.91      0.92      
+gnl|Bakta|IPPBFM_05  gnl|Bakta|GLIGEG_005  0.92      0.93      
+gnl|Bakta|IPPBFM_06  gnl|Bakta|GLIGEG_006  0.75      0.75      
+gnl|Bakta|IPPBFM_08  gnl|Bakta|GLIGEG_019  0.59      0.73      
+gnl|Bakta|IPPBFM_08  gnl|Bakta|GLIGEG_031  1.00      1.00      
+
+ERR2667210_serotype_38_NN vs SAMEA114521217_serotype_38
+-------------------------------------------------------
+Query                Target                Identity  Similarity
+gnl|Bakta|IPPBFM_01  gnl|Bakta|AGBPPP_001  1.00      1.00      
+gnl|Bakta|IPPBFM_02  gnl|Bakta|AGBPPP_002  1.00      1.00      
+gnl|Bakta|IPPBFM_03  gnl|Bakta|AGBPPP_003  0.92      0.92      
+gnl|Bakta|IPPBFM_04  gnl|Bakta|AGBPPP_004  0.94      0.94      
+gnl|Bakta|IPPBFM_05  gnl|Bakta|AGBPPP_005  1.00      1.00      
+gnl|Bakta|IPPBFM_06  gnl|Bakta|AGBPPP_006  0.75      0.75      
+gnl|Bakta|IPPBFM_07  gnl|Bakta|AGBPPP_048  0.95      0.95      
+gnl|Bakta|IPPBFM_08  gnl|Bakta|AGBPPP_049  1.00      1.00      
+
+ERR2667210_serotype_38_NN vs serotype_38
+----------------------------------------
+Query                Target      Identity  Similarity
+gnl|Bakta|IPPBFM_02  CAI34421.1  0.33      0.39      
+gnl|Bakta|IPPBFM_07  CAI34398.1  0.62      0.70      
+gnl|Bakta|IPPBFM_07  SPC38_0027  0.80      0.80      
+gnl|Bakta|IPPBFM_08  SPC38_0002  0.47      0.61      
+
+ERR3303233_serotype_38_novel_NN vs ERR632902_serotype_38_novel_NN
+-----------------------------------------------------------------
+Query                 Target                Identity  Similarity
+gnl|Bakta|ABMNEN_001  gnl|Bakta|OFEDLN_030  0.98      0.99      
+gnl|Bakta|ABMNEN_002  gnl|Bakta|OFEDLN_031  0.99      0.99      
+gnl|Bakta|ABMNEN_003  gnl|Bakta|OFEDLN_032  0.30      0.30      
+
+ERR3303233_serotype_38_novel_NN vs ERR925028_serotype_38_NN
+-----------------------------------------------------------
+Query                 Target                Identity  Similarity
+gnl|Bakta|ABMNEN_001  gnl|Bakta|GMKEGH_013  1.00      1.00      
+gnl|Bakta|ABMNEN_002  gnl|Bakta|GMKEGH_001  0.97      0.99      
+gnl|Bakta|ABMNEN_003  gnl|Bakta|GMKEGH_002  0.91      0.91      
+gnl|Bakta|ABMNEN_004  gnl|Bakta|GMKEGH_003  1.00      1.00      
+gnl|Bakta|ABMNEN_005  gnl|Bakta|GMKEGH_004  0.97      0.98      
+gnl|Bakta|ABMNEN_006  gnl|Bakta|GMKEGH_005  0.99      1.00      
+gnl|Bakta|ABMNEN_007  gnl|Bakta|GMKEGH_006  1.00      1.00      
+
+ERR3303233_serotype_38_novel_NN vs SAMEA114211878_serotype_38_novel
+-------------------------------------------------------------------
+Query                 Target                Identity  Similarity
+gnl|Bakta|ABMNEN_001  gnl|Bakta|GLIGEG_019  0.59      0.73      
+gnl|Bakta|ABMNEN_001  gnl|Bakta|GLIGEG_031  1.00      1.00      
+gnl|Bakta|ABMNEN_002  gnl|Bakta|GLIGEG_001  1.00      1.00      
+gnl|Bakta|ABMNEN_002  gnl|Bakta|GLIGEG_029  0.41      0.57      
+gnl|Bakta|ABMNEN_003  gnl|Bakta|GLIGEG_002  0.99      1.00      
+gnl|Bakta|ABMNEN_004  gnl|Bakta|GLIGEG_003  0.92      0.92      
+gnl|Bakta|ABMNEN_005  gnl|Bakta|GLIGEG_004  0.94      0.94      
+gnl|Bakta|ABMNEN_006  gnl|Bakta|GLIGEG_005  0.93      0.93      
+gnl|Bakta|ABMNEN_007  gnl|Bakta|GLIGEG_006  0.75      0.75      
+gnl|Bakta|ABMNEN_008  gnl|Bakta|GLIGEG_007  1.00      1.00      
+gnl|Bakta|ABMNEN_008  gnl|Bakta|GLIGEG_024  0.69      0.71      
+gnl|Bakta|ABMNEN_009  gnl|Bakta|GLIGEG_008  0.67      0.67      
+
+ERR3303233_serotype_38_novel_NN vs SAMEA114521217_serotype_38
+-------------------------------------------------------------
+Query                 Target                Identity  Similarity
+gnl|Bakta|ABMNEN_001  gnl|Bakta|AGBPPP_049  1.00      1.00      
+gnl|Bakta|ABMNEN_002  gnl|Bakta|AGBPPP_001  0.97      0.99      
+gnl|Bakta|ABMNEN_003  gnl|Bakta|AGBPPP_002  0.91      0.91      
+gnl|Bakta|ABMNEN_004  gnl|Bakta|AGBPPP_003  0.92      0.92      
+gnl|Bakta|ABMNEN_005  gnl|Bakta|AGBPPP_004  0.91      0.92      
+gnl|Bakta|ABMNEN_006  gnl|Bakta|AGBPPP_005  0.99      1.00      
+gnl|Bakta|ABMNEN_007  gnl|Bakta|AGBPPP_006  0.75      0.75      
+gnl|Bakta|ABMNEN_008  gnl|Bakta|AGBPPP_007  0.96      0.98      
+gnl|Bakta|ABMNEN_009  gnl|Bakta|AGBPPP_008  0.34      0.36      
+gnl|Bakta|ABMNEN_009  gnl|Bakta|AGBPPP_009  0.58      0.60      
+
+ERR3303233_serotype_38_novel_NN vs serotype_38
+----------------------------------------------
+Query                 Target      Identity  Similarity
+gnl|Bakta|ABMNEN_001  SPC38_0002  0.47      0.61      
+gnl|Bakta|ABMNEN_003  CAI34421.1  0.35      0.42      
+gnl|Bakta|ABMNEN_008  SPC38_0003  0.40      0.41      
+gnl|Bakta|ABMNEN_008  SPC38_0023  0.39      0.40      
+gnl|Bakta|ABMNEN_009  SPC38_0003  0.50      0.54      
+gnl|Bakta|ABMNEN_009  SPC38_0023  0.53      0.57      
+
+ERR632902_serotype_38_novel_NN vs ERR925028_serotype_38_NN
+----------------------------------------------------------
+Query                 Target                Identity  Similarity
+gnl|Bakta|OFEDLN_030  gnl|Bakta|GMKEGH_013  0.98      0.99      
+gnl|Bakta|OFEDLN_031  gnl|Bakta|GMKEGH_001  0.98      0.99      
+
+ERR632902_serotype_38_novel_NN vs SAMEA114211878_serotype_38_novel
+------------------------------------------------------------------
+Query                 Target                Identity  Similarity
+gnl|Bakta|OFEDLN_030  gnl|Bakta|GLIGEG_019  0.59      0.73      
+gnl|Bakta|OFEDLN_030  gnl|Bakta|GLIGEG_031  0.98      0.99      
+gnl|Bakta|OFEDLN_031  gnl|Bakta|GLIGEG_001  0.99      0.99      
+gnl|Bakta|OFEDLN_031  gnl|Bakta|GLIGEG_029  0.41      0.57      
+gnl|Bakta|OFEDLN_032  gnl|Bakta|GLIGEG_002  0.30      0.30      
+
+ERR632902_serotype_38_novel_NN vs SAMEA114521217_serotype_38
+------------------------------------------------------------
+Query                 Target                Identity  Similarity
+gnl|Bakta|OFEDLN_030  gnl|Bakta|AGBPPP_049  0.98      0.99      
+gnl|Bakta|OFEDLN_031  gnl|Bakta|AGBPPP_001  0.98      0.99      
+
+ERR632902_serotype_38_novel_NN vs serotype_38
+---------------------------------------------
+Query                 Target      Identity  Similarity
+gnl|Bakta|OFEDLN_030  SPC38_0002  0.47      0.61      
+
+ERR925028_serotype_38_NN vs SAMEA114211878_serotype_38_novel
+------------------------------------------------------------
+Query                 Target                Identity  Similarity
+gnl|Bakta|GMKEGH_001  gnl|Bakta|GLIGEG_001  0.97      0.99      
+gnl|Bakta|GMKEGH_001  gnl|Bakta|GLIGEG_029  0.41      0.57      
+gnl|Bakta|GMKEGH_002  gnl|Bakta|GLIGEG_002  0.91      0.91      
+gnl|Bakta|GMKEGH_003  gnl|Bakta|GLIGEG_003  0.92      0.92      
+gnl|Bakta|GMKEGH_004  gnl|Bakta|GLIGEG_004  0.91      0.92      
+gnl|Bakta|GMKEGH_005  gnl|Bakta|GLIGEG_005  0.92      0.93      
+gnl|Bakta|GMKEGH_006  gnl|Bakta|GLIGEG_006  0.75      0.75      
+gnl|Bakta|GMKEGH_013  gnl|Bakta|GLIGEG_019  0.59      0.73      
+gnl|Bakta|GMKEGH_013  gnl|Bakta|GLIGEG_031  1.00      1.00      
+
+ERR925028_serotype_38_NN vs SAMEA114521217_serotype_38
+------------------------------------------------------
+Query                 Target                Identity  Similarity
+gnl|Bakta|GMKEGH_001  gnl|Bakta|AGBPPP_001  1.00      1.00      
+gnl|Bakta|GMKEGH_002  gnl|Bakta|AGBPPP_002  1.00      1.00      
+gnl|Bakta|GMKEGH_003  gnl|Bakta|AGBPPP_003  0.92      0.92      
+gnl|Bakta|GMKEGH_004  gnl|Bakta|AGBPPP_004  0.94      0.94      
+gnl|Bakta|GMKEGH_005  gnl|Bakta|AGBPPP_005  1.00      1.00      
+gnl|Bakta|GMKEGH_006  gnl|Bakta|AGBPPP_006  0.75      0.75      
+gnl|Bakta|GMKEGH_012  gnl|Bakta|AGBPPP_048  0.95      0.95      
+gnl|Bakta|GMKEGH_013  gnl|Bakta|AGBPPP_049  1.00      1.00      
+
+ERR925028_serotype_38_NN vs serotype_38
+---------------------------------------
+Query                 Target      Identity  Similarity
+gnl|Bakta|GMKEGH_002  CAI34421.1  0.33      0.39      
+gnl|Bakta|GMKEGH_007  CAI34399.1  1.00      1.00      
+gnl|Bakta|GMKEGH_008  CAI34400.1  1.00      1.00      
+gnl|Bakta|GMKEGH_009  CAI34401.1  1.00      1.00      
+gnl|Bakta|GMKEGH_010  SPC38_0004  0.92      0.94      
+gnl|Bakta|GMKEGH_010  SPC38_0009  0.48      0.48      
+gnl|Bakta|GMKEGH_010  SPC38_0026  0.44      0.44      
+gnl|Bakta|GMKEGH_011  SPC38_0009  0.34      0.35      
+gnl|Bakta|GMKEGH_011  SPC38_0026  0.32      0.32      
+gnl|Bakta|GMKEGH_012  CAI34398.1  0.62      0.70      
+gnl|Bakta|GMKEGH_012  SPC38_0027  0.80      0.80      
+gnl|Bakta|GMKEGH_013  SPC38_0002  0.47      0.61      
+
+SAMEA114211878_serotype_38_novel vs SAMEA114521217_serotype_38
+--------------------------------------------------------------
+Query                 Target                Identity  Similarity
+gnl|Bakta|GLIGEG_001  gnl|Bakta|AGBPPP_001  0.97      0.99      
+gnl|Bakta|GLIGEG_002  gnl|Bakta|AGBPPP_002  0.91      0.91      
+gnl|Bakta|GLIGEG_003  gnl|Bakta|AGBPPP_003  1.00      1.00      
+gnl|Bakta|GLIGEG_004  gnl|Bakta|AGBPPP_004  0.97      0.98      
+gnl|Bakta|GLIGEG_005  gnl|Bakta|AGBPPP_005  0.92      0.93      
+gnl|Bakta|GLIGEG_006  gnl|Bakta|AGBPPP_006  1.00      1.00      
+gnl|Bakta|GLIGEG_007  gnl|Bakta|AGBPPP_007  0.96      0.98      
+gnl|Bakta|GLIGEG_008  gnl|Bakta|AGBPPP_008  0.51      0.54      
+gnl|Bakta|GLIGEG_024  gnl|Bakta|AGBPPP_007  0.69      0.70      
+gnl|Bakta|GLIGEG_025  gnl|Bakta|AGBPPP_009  0.44      0.46      
+gnl|Bakta|GLIGEG_029  gnl|Bakta|AGBPPP_001  0.41      0.57      
+gnl|Bakta|GLIGEG_019  gnl|Bakta|AGBPPP_049  0.59      0.73      
+gnl|Bakta|GLIGEG_031  gnl|Bakta|AGBPPP_049  1.00      1.00      
+
+SAMEA114211878_serotype_38_novel vs serotype_38
+-----------------------------------------------
+Query                 Target      Identity  Similarity
+gnl|Bakta|GLIGEG_002  CAI34421.1  0.34      0.42      
+gnl|Bakta|GLIGEG_007  SPC38_0003  0.40      0.41      
+gnl|Bakta|GLIGEG_007  SPC38_0023  0.39      0.40      
+gnl|Bakta|GLIGEG_008  SPC38_0003  0.31      0.35      
+gnl|Bakta|GLIGEG_008  SPC38_0023  0.33      0.36      
+gnl|Bakta|GLIGEG_019  SPC38_0002  0.45      0.62      
+gnl|Bakta|GLIGEG_024  SPC38_0003  0.55      0.57      
+gnl|Bakta|GLIGEG_024  SPC38_0023  0.56      0.57      
+gnl|Bakta|GLIGEG_031  SPC38_0002  0.47      0.61      
+
+SAMEA114521217_serotype_38 vs serotype_38
+-----------------------------------------
+Query                 Target      Identity  Similarity
+gnl|Bakta|AGBPPP_002  CAI34421.1  0.33      0.39      
+gnl|Bakta|AGBPPP_007  SPC38_0003  0.41      0.41      
+gnl|Bakta|AGBPPP_007  SPC38_0023  0.40      0.41      
+gnl|Bakta|AGBPPP_009  SPC38_0003  0.38      0.39      
+gnl|Bakta|AGBPPP_009  SPC38_0023  0.39      0.39      
+gnl|Bakta|AGBPPP_048  CAI34398.1  0.65      0.74      
+gnl|Bakta|AGBPPP_048  SPC38_0027  0.84      0.84      
+gnl|Bakta|AGBPPP_049  SPC38_0002  0.47      0.61      
